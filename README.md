@@ -1,2 +1,3 @@
-# BusManagement
-BusManagement algorithm for PROJ631
+# Bus Management
+
+A project for my university
