@@ -7,6 +7,9 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
+        // Algo Heuristic
+        // Depth First Search :
+        // On parcours, puis on
 	    // Create all the Bus stops here
         //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:mm");
         //LocalTime a = LocalTime.parse("7:45", formatter);

@@ -124,14 +124,29 @@ public class Route {
                     }
 
                     routes.addAll(inDepthRoutes);
-                }
 
+                }
+                List<Route> reverseRoutes = new ArrayList<>();
+                for(int i=0; i< routes.size(); i ++){
+                    reverseRoutes.add(routes.get(i).getReverse());
+                    /*
+                    todo: Faire en sorte que l'on trouve la ligne de bus dans la route.
+                     */
+                }
+                routes.addAll(reverseRoutes);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-
         return routes;
+    }
+
+    public Route getReverse(){
+        Route reverse = new Route(this);
+        BusStop from = reverse.getFromStop();
+        reverse.setFromStop(reverse.getToStop());
+        reverse.setToStop(from);
+        return reverse;
     }
 
     @Override
