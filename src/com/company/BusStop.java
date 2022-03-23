@@ -56,12 +56,7 @@ public class BusStop {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BusStop busStop = (BusStop) o;
-        return Objects.equals(name, busStop.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
+        return Objects.equals(this.name, busStop.name);
     }
 
     @Override

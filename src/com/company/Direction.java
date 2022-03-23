@@ -12,6 +12,10 @@ public class Direction {
         this.busRoutes = busRoutes;
     }
 
+    public boolean routeExistsBetween(BusStop from, BusStop to){
+        return false;
+    }
+
     public List<BusRoute> routeBetween(BusStop from, BusStop to){
         // verify if we can reach "to" from the "from" bus stop
         return null;

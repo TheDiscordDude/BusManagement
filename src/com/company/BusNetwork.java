@@ -30,6 +30,14 @@ public class BusNetwork {
         return null;
     }
 
+    public boolean contains(BusStop busStop){
+        for(BusLine line : this.busLines){
+            if(line.contains(busStop))
+                return true;
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         String result = "BusNetwork{";
@@ -39,4 +47,5 @@ public class BusNetwork {
         result+="}";
         return result;
     }
+
 }
