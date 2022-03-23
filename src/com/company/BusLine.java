@@ -56,4 +56,15 @@ public class BusLine {
         // returns the Bus stops that 2 lines have in commmon
         return null;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(this==obj){
+            return true;
+        }
+        else {
+            BusLine other = (BusLine) obj;
+            return this.name == other.getName();
+        }
+    }
 }

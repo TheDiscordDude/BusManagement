@@ -31,8 +31,6 @@ public class Direction {
                     isLast = false;
                 }
             }
-            System.out.println(stop.toString() + " " + isLast );
-
             if(isLast) {
                 return stop;
             }
