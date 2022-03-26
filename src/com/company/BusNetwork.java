@@ -24,7 +24,34 @@ public class BusNetwork {
     }
 
     public List<BusRoute> getShortestPathBetween(BusStop from, BusStop to ){
+        List<BusLine> availableDepartureLines = new ArrayList<>();
+        List<BusLine> availableArrivalLines = new ArrayList<>();
+
+        for(BusLine l : this.busLines){
+            if(l.contains(from)){
+                availableDepartureLines.add(l);
+            }
+            if(l.contains(to)){
+                availableArrivalLines.add(l);
+            }
+        }
+
+        List<BusLine> completeLines = new ArrayList<>();
+        for(BusLine l : availableDepartureLines){
+            if(availableArrivalLines.contains(l)){
+                completeLines.add(l);
+            }
+        }
+
+        if(completeLines.size() > 0){
+            System.out.println(completeLines.size());
+            for(BusLine l: completeLines){
+                l.getShortestPathBetween(from, to);
+            }
+        }
+
         return null;
+
     }
     public List<BusRoute> getFastestPathBetween(BusStop from, BusStop to ){
         return null;

@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Objects;
 
 public class BusRoute {
-    private BusStop fromStop;
-    private BusStop toStop;
+    private BusStop departureStop;
+    private BusStop arrivalStop;
     private long weight;
 
     public BusRoute(BusStop fromStop, BusStop toStop, long weight) {
-        this.fromStop = fromStop;
-        this.toStop = toStop;
+        this.departureStop = fromStop;
+        this.arrivalStop = toStop;
         this.weight = weight;
     }
 
@@ -23,14 +23,14 @@ public class BusRoute {
     }
 
     public BusRoute(){
-        this.fromStop = null;
-        this.toStop = null;
+        this.departureStop = null;
+        this.arrivalStop = null;
     }
 
 
 
     public BusRoute(BusRoute busRoute){
-        this(busRoute.getFromStop(), busRoute.getToStop(), busRoute.getWeight());
+        this(busRoute.getDepartureStop(), busRoute.getArrivalStop(), busRoute.getWeight());
     }
 
     public long getWeight() {
@@ -41,90 +41,82 @@ public class BusRoute {
         this.weight = weight;
     }
 
-    public BusStop getFromStop() {
-        return fromStop;
+    public BusStop getDepartureStop() {
+        return departureStop;
     }
 
-    public void setFromStop(BusStop fromStop) {
-        this.fromStop = fromStop;
+    public void setDepartureStop(BusStop departureStop) {
+        this.departureStop = departureStop;
     }
 
-    public BusStop getToStop() {
-        return toStop;
+    public BusStop getArrivalStop() {
+        return arrivalStop;
     }
 
-    public void setToStop(BusStop toStop) {
-        this.toStop = toStop;
+    public void setArrivalStop(BusStop arrivalStop) {
+        this.arrivalStop = arrivalStop;
     }
 
-    public static List<BusRoute> load(List<BusStop> busStops, String pathToBusLine){
-        List<String> filePaths = new ArrayList<String>();
-        filePaths.add(pathToBusLine);
+    public static List<BusRoute> load(List<BusStop> busStops, String filePath){
         List<BusRoute> routes = new ArrayList<BusRoute>();
-
-        for (String filePath : filePaths) {
-            try {
-                List<String> lines = Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
-                String firstLine = lines.get(0);
-                String[] busStopsNames = firstLine.split(" N ");
-                for (int i = 0; i < busStopsNames.length-1 ;i ++) {
-                    List<BusRoute> inDepthRoutes = new ArrayList<BusRoute>();
-                    String[] departures = busStopsNames[i].split(" \\+ ");
-                    String[] arrivals = busStopsNames[i+1].split(" \\+ ");
-                    for(String departure : departures){
-                        BusStop busStop = null;
-                        for(BusStop b : busStops){
-                            if (Objects.equals(b.getName(), departure)){
-                                busStop = b;
-                            }
-                        }
-                        BusRoute currentRoute = new BusRoute();
-                        currentRoute.setFromStop(busStop);
-                        inDepthRoutes.add(currentRoute);
-                    }
-
-                    for(String arrival : arrivals){
-                        BusStop busStop = null;
-                        for(BusStop b : busStops){
-                            if (Objects.equals(b.getName(), arrival)){
-                                busStop = b;
-                            }
-                        }
-                        for(BusRoute r : inDepthRoutes){
-                            if(r.getToStop() == null){
-                                r.toStop=busStop;
-                            }
-                            else{
-                                BusRoute newRoute = new BusRoute(r);
-                                newRoute.setToStop(busStop);
-                                inDepthRoutes.add(newRoute);
-                            }
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
+            String firstLine = lines.get(0);
+            String[] busStopsNames = firstLine.split(" N ");
+            for (int i = 0; i < busStopsNames.length-1 ;i ++) {
+                List<BusRoute> inDepthRoutes = new ArrayList<BusRoute>();
+                String[] departures = busStopsNames[i].split(" \\+ ");
+                String[] arrivals = busStopsNames[i+1].split(" \\+ ");
+                for(String departure : departures){
+                    BusStop busStop = null;
+                    for(BusStop b : busStops){
+                        if (Objects.equals(b.getName(), departure)){
+                            busStop = b;
                         }
                     }
-
-                    routes.addAll(inDepthRoutes);
-
+                    BusRoute currentRoute = new BusRoute();
+                    currentRoute.setDepartureStop(busStop);
+                    inDepthRoutes.add(currentRoute);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+                for(String arrival : arrivals){
+                    BusStop busStop = null;
+                    for(BusStop b : busStops){
+                        if (Objects.equals(b.getName(), arrival)){
+                            busStop = b;
+                        }
+                    }
+                    for(BusRoute r : inDepthRoutes){
+                        if(r.getArrivalStop() == null){
+                            r.arrivalStop =busStop;
+                        }
+                        else{
+                            BusRoute newRoute = new BusRoute(r);
+                            newRoute.setArrivalStop(busStop);
+                            inDepthRoutes.add(newRoute);
+                        }
+                    }
+                }
+                routes.addAll(inDepthRoutes);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return routes;
     }
 
     public BusRoute getReverse(){
         BusRoute reverse = new BusRoute(this);
-        BusStop from = reverse.getFromStop();
-        reverse.setFromStop(reverse.getToStop());
-        reverse.setToStop(from);
+        BusStop from = reverse.getDepartureStop();
+        reverse.setDepartureStop(reverse.getArrivalStop());
+        reverse.setArrivalStop(from);
         return reverse;
     }
 
     @Override
     public String toString() {
         return "BusRoute{" +
-                "fromStop=" + fromStop +
-                ", toStop=" + toStop +
+                "fromStop=" + departureStop +
+                ", toStop=" + arrivalStop +
                 '}';
     }
 }
