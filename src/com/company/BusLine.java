@@ -69,10 +69,14 @@ public class BusLine {
     }
 
     public List<BusRoute> getShortestPathBetween(BusStop from, BusStop to){
-        for(Direction d :this.directions){
-            System.out.println(d.pathExistsBetween(from, to) + " " + d.toString());
-        }
+        List<BusRoute> result = new ArrayList<>();
 
-        return null;
+        for(Direction d :this.directions){
+            if (d.pathExistsBetween(from, to)> -1 ){
+                result = d.getShortestPathBetween(from, to);
+                System.out.println(result);
+            }
+        }
+        return result;
     }
 }

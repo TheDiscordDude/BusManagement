@@ -13,11 +13,12 @@ public class Direction {
         this.busRoutes = busRoutes;
     }
 
-    public boolean pathExistsBetween(BusStop startingStop, BusStop endStop){
+    public int pathExistsBetween(BusStop startingStop, BusStop endStop){
         // verify if we can reach "to" from the "from" bus stop
         // thanks to the Breadth-first search (parcours en largeur)
         List<BusRoute> routes = new ArrayList<>(getRoutesFrom(startingStop));
         boolean continueLoop = true;
+        int iteration=1;
         do {
             List<BusRoute> toBeAdded = new ArrayList<>();
             List<BusRoute> toBeRemoved = new ArrayList<>();
@@ -27,7 +28,7 @@ public class Direction {
             }
             for(BusRoute route : routes){
                 if(route.getArrivalStop() == endStop){
-                    return true;
+                    return iteration;
                 }
                 else{
                     toBeAdded.addAll(getRoutesFrom(route.getArrivalStop()));
@@ -36,15 +37,33 @@ public class Direction {
             }
             routes.addAll(toBeAdded);
             routes.removeAll(toBeRemoved);
+            iteration ++;
 
         }while (continueLoop);
 
-        return false;
+        return -1;
     }
 
     public List<BusRoute> getShortestPathBetween(BusStop from, BusStop to){
         // thanks to the Depth-first search (parcours en pronfondeur)
-        return null;
+        List<BusRoute> routes = new ArrayList<>();
+        boolean continueLoop=true;
+        List<BusRoute> rs = getRoutesFrom(from);
+
+        do{
+            for(BusRoute r : rs){
+                if(this.pathExistsBetween(r.getDepartureStop(), to) > -1){
+                    routes.add(r);
+                }
+                if(r.getArrivalStop() == to){
+                    continueLoop=false;
+                }
+            }
+            rs = getRoutesFrom(routes.get(routes.size()-1).getArrivalStop());
+
+        }while(continueLoop);
+
+        return routes;
     }
 
     public Instant firstBusAfter(Instant a){

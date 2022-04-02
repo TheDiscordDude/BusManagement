@@ -36,18 +36,35 @@ public class BusNetwork {
             }
         }
 
+        List<List<BusLine>> allPossibilities = new ArrayList<>(); // cartesian product between l1 and l2
         List<BusLine> completeLines = new ArrayList<>();
-        for(BusLine l : availableDepartureLines){
-            if(availableArrivalLines.contains(l)){
-                completeLines.add(l);
+
+        for(BusLine l1 : availableDepartureLines){
+            for(BusLine l2 : availableArrivalLines){
+                if(l1 == l2)
+                    completeLines.add(l1);
+                else{
+                    List<BusLine> p = new ArrayList<>();
+                    p.add(l1);
+                    p.add(l2);
+                    allPossibilities.add(p);
+                }
             }
         }
 
+        // All the paths are going in there
+        List<List<BusRoute>> paths = new ArrayList<List<BusRoute>>();
+
+        // We check the shortest path for each complete line
         if(completeLines.size() > 0){
-            System.out.println(completeLines.size());
             for(BusLine l: completeLines){
-                l.getShortestPathBetween(from, to);
+                paths.add(l.getShortestPathBetween(from, to));
             }
+        }
+
+        // we then need to check the shortest path for routes with different BusLines :
+        for(List<BusLine> ls : allPossibilities){
+            // todo:here my dude
         }
 
         return null;
