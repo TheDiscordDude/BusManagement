@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Direction {
-    private List<BusStop> busStops;
-    private List<BusRoute> busRoutes;
+    private final List<BusStop> busStops;
+    private final List<BusRoute> busRoutes;
 
     public Direction(List<BusStop> busStops, List<BusRoute> busRoutes) {
         this.busStops = busStops;
@@ -17,6 +17,7 @@ public class Direction {
         // verify if we can reach "to" from the "from" bus stop
         // thanks to the Breadth-first search (parcours en largeur)
         List<BusRoute> routes = new ArrayList<>(getRoutesFrom(startingStop));
+
         boolean continueLoop = true;
         int iteration=1;
         do {
@@ -74,7 +75,7 @@ public class Direction {
     private List<BusRoute> getRoutesFrom(BusStop busStop){
         List<BusRoute> routes = new ArrayList<>();
         for (BusRoute r : this.busRoutes){
-            if(r.getDepartureStop() == busStop)
+            if(r.getDepartureStop().equals(busStop))
                 routes.add(r);
         }
         return routes;

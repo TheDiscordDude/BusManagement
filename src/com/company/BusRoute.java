@@ -114,9 +114,6 @@ public class BusRoute {
 
     @Override
     public String toString() {
-        return "BusRoute{" +
-                "fromStop=" + departureStop +
-                ", toStop=" + arrivalStop +
-                '}';
+        return departureStop + " -> " + arrivalStop ;
     }
 }

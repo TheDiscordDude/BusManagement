@@ -23,7 +23,7 @@ public class BusNetwork {
         this.busLines.add(line);
     }
 
-    public List<BusRoute> getShortestPathBetween(BusStop from, BusStop to ){
+    public Path getShortestPathBetween(BusStop from, BusStop to ){
         List<BusLine> availableDepartureLines = new ArrayList<>();
         List<BusLine> availableArrivalLines = new ArrayList<>();
 
@@ -51,26 +51,51 @@ public class BusNetwork {
                 }
             }
         }
-
         // All the paths are going in there
-        List<List<BusRoute>> paths = new ArrayList<List<BusRoute>>();
+        List<Path> paths = new ArrayList<Path>();
 
         // We check the shortest path for each complete line
         if(completeLines.size() > 0){
             for(BusLine l: completeLines){
-                paths.add(l.getShortestPathBetween(from, to));
+                Path p = new Path();
+                p.addPath(l, l.getShortestPathBetween(from, to));
+                paths.add(p);
             }
         }
 
         // we then need to check the shortest path for routes with different BusLines :
         for(List<BusLine> ls : allPossibilities){
-            // todo:here my dude
+            BusStop commonStop = BusLine.commonStop(ls.get(0), ls.get(1));
+            Path p = new Path();
+            p.addPath(ls.get(0), ls.get(0).getShortestPathBetween(from, commonStop));
+            p.addPath(ls.get(1), ls.get(1).getShortestPathBetween(commonStop, to));
+            paths.add(p);
         }
 
-        return null;
-
+        Path result = paths.get(0);
+        int i = 0;
+        do {
+            if(result.length() > paths.get(i).length()){
+                result = paths.get(i);
+            }
+            i++;
+        }while (i < paths.size());
+        
+        return result;
     }
     public List<BusRoute> getFastestPathBetween(BusStop from, BusStop to ){
+        return null;
+    }
+
+    public BusStop findBusStop(String name){
+        BusStop b = new BusStop(name);
+        for(BusLine l : this.busLines){
+            for(BusStop b1 : l.getBusStops()){
+                if(b1.equals(b)){
+                    return b1;
+                }
+            }
+        }
         return null;
     }
 

@@ -52,8 +52,11 @@ public class BusLine {
         return this.busStops.contains(busStop);
     }
 
-    public static List<BusStop> commonStops(BusLine line1, BusLine line2){
-        // returns the Bus stops that 2 lines have in commmon
+    public static BusStop commonStop(BusLine line1, BusLine line2){
+        for(BusStop b1 : line1.getBusStops()){
+            if(line2.contains(b1))
+                return b1;
+        }
         return null;
     }
 
@@ -74,7 +77,6 @@ public class BusLine {
         for(Direction d :this.directions){
             if (d.pathExistsBetween(from, to)> -1 ){
                 result = d.getShortestPathBetween(from, to);
-                System.out.println(result);
             }
         }
         return result;
