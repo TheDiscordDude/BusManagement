@@ -9,20 +9,8 @@ public class Main {
     public static void main(String[] args) {
 
         List<BusStop> busStops = BusStop.load();
-        /*
-        for(BusStop b : busStops){
-            System.out.println(b);
-        }
-        */
-
 
         List<Route> routes = Route.load(busStops);
-        /*
-        for(Route r : routes){
-            System.out.println(r);
-        }
-
-         */
 
         BusNetwork network = new BusNetwork(busStops, routes);
 
