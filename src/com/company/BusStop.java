@@ -72,8 +72,6 @@ public class BusStop {
 
     @Override
     public String toString() {
-        return "BusStop{" +
-                "name='" + name + '\'' +
-                '}';
+        return  name;
     }
 }

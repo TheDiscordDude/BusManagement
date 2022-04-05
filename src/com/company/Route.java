@@ -13,24 +13,20 @@ import java.util.stream.Collectors;
 public class Route {
     private BusStop fromStop;
     private BusStop toStop;
-    private Instant departureTime;
-    private Instant arrivalTime;
     private String busLine;
 
-    public Route(BusStop fromStop, BusStop toStop, Instant departureTime, Instant arrivalTime, String busLine) {
+    public Route(BusStop fromStop, BusStop toStop, String busLine) {
         this.fromStop = fromStop;
         this.toStop = toStop;
-        this.departureTime = departureTime;
-        this.arrivalTime = arrivalTime;
         this.busLine = busLine;
     }
 
     public Route(Route otherRoute){
-        this(otherRoute.getFromStop(), otherRoute.getToStop(), otherRoute.getDepartureTime(), otherRoute.getArrivalTime(), otherRoute.getBusLine());
+        this(otherRoute.getFromStop(), otherRoute.getToStop(), otherRoute.getBusLine());
     }
 
     public Route(){
-        this(null, null, null, null, null);
+        this(null, null, null);
     }
 
     public BusStop getFromStop() {
@@ -49,22 +45,6 @@ public class Route {
         this.toStop = toStop;
     }
 
-    public Instant getDepartureTime() {
-        return departureTime;
-    }
-
-    public void setDepartureTime(Instant departureTime) {
-        this.departureTime = departureTime;
-    }
-
-    public Instant getArrivalTime() {
-        return arrivalTime;
-    }
-
-    public void setArrivalTime(Instant arrivalTime) {
-        this.arrivalTime = arrivalTime;
-    }
-
     public String getBusLine() {
         return busLine;
     }
@@ -73,14 +53,21 @@ public class Route {
         this.busLine = busLine;
     }
 
-    public Duration getWeight(){
-        return Duration.between(this.arrivalTime,this.departureTime);
+    public Double getWeight(double predecessorWeight){
+        return predecessorWeight+1;
+    }
+
+    public Double getTimeWeight(double predecessorWeight, Instant arrivalDate){
+
+        return null;
     }
 
     public static List<Route> load(List<BusStop> busStops){
         List<String> filePaths = new ArrayList<String>();
+
         filePaths.add("1_Poisy-ParcDesGlaisins.txt");
         filePaths.add("2_Piscine-Patinoire_Campus.txt");
+
         List<Route> routes = new ArrayList<Route>();
 
         for (String filePath : filePaths) {
@@ -128,9 +115,11 @@ public class Route {
                 }
                 List<Route> reverseRoutes = new ArrayList<>();
                 for(int i=0; i< routes.size(); i ++){
+                    if(routes.get(i).getBusLine() == null)
+                        routes.get(i).setBusLine("sibra" + (filePath.split("_"))[0]);
                     reverseRoutes.add(routes.get(i).getReverse());
                     /*
-                    todo: Faire en sorte que l'on trouve la ligne de bus dans la route.
+                        todo: Faire en sorte que l'on trouve la ligne de bus dans la route.
                      */
                 }
                 routes.addAll(reverseRoutes);
@@ -151,12 +140,6 @@ public class Route {
 
     @Override
     public String toString() {
-        return "Route{" +
-                "fromStop=" + fromStop +
-                ", toStop=" + toStop +
-                ", departureTime=" + departureTime +
-                ", arrivalTime=" + arrivalTime +
-                ", busLine='" + busLine + '\'' +
-                '}';
+        return fromStop + " -> " + toStop + "("+this.busLine+")";
     }
 }

@@ -7,25 +7,27 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        // Algo Heuristic
-        // Depth First Search :
-        // On parcours, puis on
-	    // Create all the Bus stops here
-        //DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:mm");
-        //LocalTime a = LocalTime.parse("7:45", formatter);
-        //System.out.println(a);
-
 
         List<BusStop> busStops = BusStop.load();
-
+        /*
         for(BusStop b : busStops){
             System.out.println(b);
         }
+        */
+
 
         List<Route> routes = Route.load(busStops);
+        /*
         for(Route r : routes){
             System.out.println(r);
         }
+
+         */
+
+        BusNetwork network = new BusNetwork(busStops, routes);
+
+        List<Route> path = network.getPathBetween(busStops.get(1), busStops.get(20), Method.SHORTEST);
+        System.out.println(path);
     }
 
 }
