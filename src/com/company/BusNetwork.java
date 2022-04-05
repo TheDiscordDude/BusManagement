@@ -23,7 +23,7 @@ public class BusNetwork {
         this.busLines.add(line);
     }
 
-    public Path getShortestPathBetween(BusStop from, BusStop to ){
+    public Path getPathBetween(BusStop from, BusStop to, Method method){
         List<BusLine> availableDepartureLines = new ArrayList<>();
         List<BusLine> availableArrivalLines = new ArrayList<>();
 
@@ -58,7 +58,15 @@ public class BusNetwork {
         if(completeLines.size() > 0){
             for(BusLine l: completeLines){
                 Path p = new Path();
-                p.addPath(l, l.getShortestPathBetween(from, to));
+                switch (method){
+                    case SHORTEST :
+                        p.addPath(l, l.getShortestPathBetween(from, to));
+                    case FASTEST :
+                        break;
+                    default :
+                        break;
+
+                }
                 paths.add(p);
             }
         }
@@ -67,8 +75,18 @@ public class BusNetwork {
         for(List<BusLine> ls : allPossibilities){
             BusStop commonStop = BusLine.commonStop(ls.get(0), ls.get(1));
             Path p = new Path();
-            p.addPath(ls.get(0), ls.get(0).getShortestPathBetween(from, commonStop));
-            p.addPath(ls.get(1), ls.get(1).getShortestPathBetween(commonStop, to));
+            switch (method){
+                case SHORTEST :
+                    p.addPath(ls.get(0), ls.get(0).getShortestPathBetween(from, commonStop));
+                    p.addPath(ls.get(1), ls.get(1).getShortestPathBetween(commonStop, to));
+
+                case FASTEST:
+                    break;
+
+                default:
+                    break;
+            }
+
             paths.add(p);
         }
 
@@ -80,11 +98,8 @@ public class BusNetwork {
             }
             i++;
         }while (i < paths.size());
-        
+
         return result;
-    }
-    public List<BusRoute> getFastestPathBetween(BusStop from, BusStop to ){
-        return null;
     }
 
     public BusStop findBusStop(String name){
