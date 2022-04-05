@@ -1,9 +1,5 @@
 package com.company;
-
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-
 public class Main {
 
     public static void main(String[] args) {
@@ -17,5 +13,4 @@ public class Main {
         List<Route> path = network.getPathBetween(busStops.get(1), busStops.get(20), Method.SHORTEST);
         System.out.println(path);
     }
-
 }

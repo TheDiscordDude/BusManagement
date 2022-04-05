@@ -11,8 +11,19 @@ public class BusNetwork {
         this.routes = routes;
     }
 
+
+    /**
+     * Returns the list of Bus route you need to take to get to your destination
+     * @param start     Our point of origin
+     * @param finish    The destination we wish to reach
+     * @param method    the method we wish to use : FASTEST path, SHORTEST path of FARMOST
+     * @return The list of Bus route you need to take to get to your destination
+     */
     public List<Route> getPathBetween(BusStop start, BusStop finish, Method method) {
+
         int nb = this.busStops.size();
+
+        // initialisation
 
         double[] weights = new double[nb];
         Arrays.fill(weights, 99999999);
@@ -24,11 +35,13 @@ public class BusNetwork {
 
         int currentNodeId = getBusStopId(start);
 
+        // the first routes that need to be treated are those coming
         List<Route> toBeTreated = findAllRoutesFrom(this.busStops.get(currentNodeId));
 
+        // to finish the initialization, we set the weight of the first node to 0
         weights[currentNodeId] = 0;
         do {
-
+            toBeTreated = new ArrayList<>(findAllRoutesFrom(this.busStops.get(currentNodeId)));
             for (Route r : toBeTreated){
                 int id = getBusStopId(r.getToStop());
                 double weight = r.getWeight(weights[currentNodeId]);
@@ -48,12 +61,12 @@ public class BusNetwork {
                         minValue = weights[i];
                         electedNodeId = i;
                     }
+                    /*
+                        todo: update the weight of the other nodes when a better path is found (verify if that's actually useful ... pretty sure it's not)
+                     */
                 }
             }
-            if (electedNodeId == 9999){
-                break;
-            }
-            toBeTreated = new ArrayList<>(findAllRoutesFrom(this.busStops.get(electedNodeId)));
+
             currentNodeId = electedNodeId;
 
         }while (usedNodesId.size() < this.busStops.size());
@@ -61,7 +74,7 @@ public class BusNetwork {
         return getFinalChain(start, finish, predecessorTable);
     }
 
-    public int getBusStopId(BusStop busStop ){
+    private int getBusStopId(BusStop busStop ){
         for(int i = 0; i < this.busStops.size(); i++){
             if(this.busStops.get(i).equals(busStop )){
                 return i;
