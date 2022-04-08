@@ -8,9 +8,17 @@ public class Main {
 
         List<Route> routes = Route.load(busStops);
 
+        /*
+        for(Route r : routes)
+            System.out.println( r.toString() + r.getTravelTime());
+
+         */
+
         BusNetwork network = new BusNetwork(busStops, routes);
 
-        List<Route> path = network.getPathBetween(busStops.get(1), busStops.get(20), Method.SHORTEST);
-        System.out.println(path);
+        List<Route> shortestPath = network.getPathBetween(busStops.get(1), busStops.get(20), Method.SHORTEST);
+        List<Route> fastestPath = network.getPathBetween(busStops.get(1), busStops.get(20), Method.SHORTEST);
+        System.out.println(shortestPath);
+        System.out.println(fastestPath);
     }
 }

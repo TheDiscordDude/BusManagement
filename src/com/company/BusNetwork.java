@@ -1,5 +1,6 @@
 package com.company;
 
+import java.time.Instant;
 import java.util.*;
 
 public class BusNetwork {
@@ -43,8 +44,14 @@ public class BusNetwork {
         do {
             toBeTreated = new ArrayList<>(findAllRoutesFrom(this.busStops.get(currentNodeId)));
             for (Route r : toBeTreated){
-                int id = getBusStopId(r.getToStop());
-                double weight = r.getWeight(weights[currentNodeId]);
+                int id = getBusStopId(r.getDestination());
+                double weight;
+
+                switch (method){
+                    case SHORTEST -> weight = r.getWeight(weights[currentNodeId]);
+                    case FASTEST -> weight = r.getWeight(weights[currentNodeId], Instant.now());
+                    default -> weight=99999999;
+                }
                 if(weights[id] > weight ){
                     weights[id] = weight;
                     predecessorTable[id] = r;
@@ -74,6 +81,12 @@ public class BusNetwork {
         return getFinalChain(start, finish, predecessorTable);
     }
 
+
+    /**
+     * This method returns the id of the bus Stop in the "busStops" array
+     * @param busStop the bus stop you wish to get the id from
+     * @return an int : -1 if the bus stop has not been found and a regular int if it has been found
+     */
     private int getBusStopId(BusStop busStop ){
         for(int i = 0; i < this.busStops.size(); i++){
             if(this.busStops.get(i).equals(busStop )){
@@ -83,25 +96,36 @@ public class BusNetwork {
         return -1;
     }
 
-    public List<Route> findAllRoutesFrom(BusStop from){
+    /** Finds all the routes going from the bus stop passed in parameter
+     * @param startingPoint the starting point
+     * @return a list of routes going from the starting point to other stops
+     */
+    public List<Route> findAllRoutesFrom(BusStop startingPoint){
         List<Route> result = new ArrayList<>();
         for(Route r : this.routes){
-            if(r.getFromStop().equals(from)){
+            if(r.getStartingPoint().equals(startingPoint)){
                 result.add(r);
             }
         }
         return result;
     }
 
-    private List<Route> getFinalChain(BusStop start, BusStop finish, Route[] predecessorTable){
+
+    /** Constructs the final chain of routes from the predecessor table from the dijkstra algorithm
+     * @param startingPoint The starting point.
+     * @param destination The bus stop where we want to go
+     * @param predecessorTable the predecessor table generated from the dijkstra algorithm
+     * @return a List of routes describing how to get to our destination from the starting point
+     */
+    private List<Route> getFinalChain(BusStop startingPoint, BusStop destination, Route[] predecessorTable){
         List<Route> finalChain = new ArrayList<>();
 
-        int startingId = getBusStopId(start);
-        int currentNodeId = getBusStopId(finish);
+        int startingId = getBusStopId(startingPoint);
+        int currentNodeId = getBusStopId(destination);
 
         while (currentNodeId != startingId){
             finalChain.add(predecessorTable[currentNodeId]);
-            currentNodeId = getBusStopId(predecessorTable[currentNodeId].getFromStop());
+            currentNodeId = getBusStopId(predecessorTable[currentNodeId].getStartingPoint());
         }
         Collections.reverse(finalChain);
         return finalChain;

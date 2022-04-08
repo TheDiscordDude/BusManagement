@@ -33,6 +33,9 @@ public class BusStop {
         return Objects.hash(name);
     }
 
+    /** This method loads all the bus stops from the files
+     * @return a complete list of bus stops
+     */
     public static List<BusStop> load() {
         List<String> filePaths = new ArrayList<String>();
         filePaths.add("1_Poisy-ParcDesGlaisins.txt");
@@ -45,7 +48,6 @@ public class BusStop {
                 String firstLine = lines.get(0);
                 String[] busStopsNames = firstLine.split(" N ");
                 for (String name : busStopsNames) {
-                    System.out.println(name + " -> ");
                     String[] temp = name.split(" \\+ ");
                     if (temp.length > 1) {
                         for (String s : temp) {
