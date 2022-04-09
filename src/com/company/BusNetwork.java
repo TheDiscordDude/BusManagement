@@ -12,6 +12,16 @@ public class BusNetwork {
         this.routes = routes;
     }
 
+    public BusStop findBusStop(String name){
+        BusStop result = null;
+        for(BusStop b : this.busStops){
+            if(b.getName().equals(name)){
+                result = b;
+                break;
+            }
+        }
+        return result;
+    }
 
     /**
      * Returns the list of Bus route you need to take to get to your destination
