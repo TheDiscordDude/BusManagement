@@ -96,6 +96,7 @@ public class Route {
     @Override
     public String toString() {
         return startingPoint + " -> " + destination + "("+this.busLine+")";
+        //return startingPoint + " " + destination + " " + this.travelTime;
     }
 
     /** The method looks into the files to calculate the travel time between 2 bus stops
@@ -213,27 +214,24 @@ public class Route {
                     }
                     routes.addAll(inDepthRoutes);
                 }
-                List<Route> reverseRoutes = new ArrayList<>();
-                //int i=0; i< routes.size(); i ++
                 for(Route r : routes){
 
                     if(r.getBusLine() == null){
                         r.setBusLine("sibra" + (filePath.split("_"))[0]);
                     }
 
-                    Route reverseRoute = r.getReverse();
-                    reverseRoutes.add(reverseRoute);
                 }
-                routes.addAll(reverseRoutes);
-
-                /*
-                todo: get travel time of each route
-                */
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        List<Route> reverseRoutes = new ArrayList<>();
+        for(Route r: routes) {
+            Route reverseRoute = r.getReverse();
+            reverseRoutes.add(reverseRoute);
+        }
+        routes.addAll(reverseRoutes);
         for(Route r: routes){
             Double travelTime = computeTravelTime(r.getBusLine(), r.getStartingPoint(), r.getDestination());
             r.setTravelTime(travelTime);
