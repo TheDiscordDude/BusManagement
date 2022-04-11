@@ -8,6 +8,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.*;
 
@@ -15,21 +17,25 @@ public class Route {
     private BusStop startingPoint;
     private BusStop destination;
     private String busLine;
-    private double travelTime;
+    private List<Date> departureTimes;
+    private List<Date> arrivalTimes;
+    private int chosenSchedule;
 
-    public Route(BusStop fromStop, BusStop toStop, String busLine, Double travelTime) {
+    public Route(BusStop fromStop, BusStop toStop, String busLine) {
         this.startingPoint = fromStop;
         this.destination = toStop;
         this.busLine = busLine;
-        this.travelTime = travelTime;
+        this.departureTimes = new ArrayList<>();
+        this.arrivalTimes = new ArrayList<>();
+        chosenSchedule= -1;
     }
 
     public Route(Route otherRoute){
-        this(otherRoute.getStartingPoint(), otherRoute.getDestination(), otherRoute.getBusLine(), otherRoute.getTravelTime());
+        this(otherRoute.getStartingPoint(), otherRoute.getDestination(), otherRoute.getBusLine());
     }
 
     public Route(){
-        this(null, null, null, 0.0);
+        this(null, null, null);
     }
 
     public BusStop getStartingPoint() {
@@ -56,12 +62,30 @@ public class Route {
         this.busLine = busLine;
     }
 
-    public void setTravelTime(double travelTime) {
-        this.travelTime = travelTime;
+    public List<Date> getDepartureTimes() {
+        return departureTimes;
     }
 
-    public double getTravelTime() {
-        return travelTime;
+    public List<Date> getArrivalTimes() {
+        return arrivalTimes;
+    }
+
+    private void addDepartureTime(Date t){
+        this.departureTimes.add(t);
+    }
+
+    private void addArrivalTime(Date t){
+        this.arrivalTimes.add(t);
+    }
+
+    public void setChosenSchedule(Date date) {
+        this.chosenSchedule = -1;
+        for(int i = 0; i < this.departureTimes.size(); i++){
+            if(this.departureTimes.get(i).after(date) || this.departureTimes.get(i).toString().equals(date.toString()) ) {
+                this.chosenSchedule = i;
+                break;
+            }
+        }
     }
 
     public Double getWeight(double predecessorWeight){
@@ -74,11 +98,28 @@ public class Route {
      * @param arrivalTime the time of arrival
      * @return the weight as a Double
      */
-    public Double getWeight(double predecessorWeight, Instant arrivalTime){
+    public Double getWeight(double predecessorWeight, Date arrivalTime){
         // todo : use the arrival time to get the real weight
-        return predecessorWeight+this.getTravelTime();
+        Date nextDepartureTime = null;
+        Double travelDuration = 0.0;
+        Double waitingTime = 0.0;
+        for(int i = 0; i < this.departureTimes.size(); i++){
+            if(this.departureTimes.get(i).after(arrivalTime) || this.departureTimes.get(i).toString().equals(arrivalTime.toString()) ) {
+                nextDepartureTime = this.departureTimes.get(i);
+                Date nextArrivalTime = this.arrivalTimes.get(i);
+
+                travelDuration = Duration.between(nextDepartureTime.toInstant(), nextArrivalTime.toInstant()).getSeconds()/60.0;
+                waitingTime = Duration.between(arrivalTime.toInstant(), nextDepartureTime.toInstant()).getSeconds()/60.0;
+                break;
+            }
+        }
+        return predecessorWeight+ waitingTime + travelDuration;
     }
 
+    public Date getArrivalTime(){
+
+        return this.arrivalTimes.get(this.chosenSchedule);
+    }
 
     /** Reverses the Path :
      * when the current route goes from A to B,
@@ -95,22 +136,22 @@ public class Route {
 
     @Override
     public String toString() {
-        return startingPoint + " -> " + destination + "("+this.busLine+")";
-        //return startingPoint + " " + destination + " " + this.travelTime;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault());
+        String departureTime = formatter.format(this.departureTimes.get(this.chosenSchedule).toInstant());
+        String arrivalTime = formatter.format(this.arrivalTimes.get(this.chosenSchedule).toInstant());
+        return startingPoint + "("+ departureTime +") -> " + destination + " (" + arrivalTime + ") - "+this.busLine;
     }
 
-    /** The method looks into the files to calculate the travel time between 2 bus stops
-     * @param busLine the bus line we need to use
-     * @param starting the starting point
-     * @param destination the destination
-     * @return a double representing the number of minutes passed between the 2 bus stops
-     */
-    public static double computeTravelTime(String busLine, BusStop starting, BusStop destination) {
+    public static void computeBusSchedules(Route r){
+
         String filePath = "";
-        if (busLine.equals("sibra1"))
+        if (r.getBusLine().equals("sibra1"))
             filePath="1_Poisy-ParcDesGlaisins.txt";
-        else if (busLine.equals("sibra2"))
+        else if (r.getBusLine().equals("sibra2"))
             filePath="2_Piscine-Patinoire_Campus.txt";
+
+        BusStop starting = r.getStartingPoint();
+        BusStop destination = r.getDestination();
         // we read the file
         String content = null;
         try{
@@ -148,29 +189,34 @@ public class Route {
 
             if(m1.find() && m2.find()){
                 try{
-                    Date d1 = new SimpleDateFormat("HH:mm").parse(timetable1[i]);
-                    Date d2 = new SimpleDateFormat("HH:mm").parse(timetable2[i]);
-                    Duration d = Duration.between(d1.toInstant(), d2.toInstant());
-                    return Double.valueOf(d.getSeconds()/60);
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
+                    Instant currentTime  = Instant.now();
+                    String instantStr = formatter.format(currentTime);
+
+                    Date d1 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(instantStr + " " + timetable1[i]);
+                    Date d2 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(instantStr + " " + timetable2[i]);
+                    r.addDepartureTime(d1);
+                    r.addArrivalTime(d2);
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
             }
         }
-        return 0;
+
     }
+
 
     /** Loads every bus routes from the files.
      * @param busStops
      * @return
      */
     public static List<Route> load(List<BusStop> busStops){
-        List<String> filePaths = new ArrayList<String>();
+        List<String> filePaths = new ArrayList<>();
 
         filePaths.add("1_Poisy-ParcDesGlaisins.txt");
         filePaths.add("2_Piscine-Patinoire_Campus.txt");
 
-        List<Route> routes = new ArrayList<Route>();
+        List<Route> routes = new ArrayList<>();
 
         for (String filePath : filePaths) {
             try {
@@ -178,7 +224,7 @@ public class Route {
                 String firstLine = lines.get(0);
                 String[] busStopsNames = firstLine.split(" N ");
                 for (int i = 0; i < busStopsNames.length-1 ;i ++) {
-                    List<Route> inDepthRoutes = new ArrayList<Route>();
+                    List<Route> inDepthRoutes = new ArrayList<>();
                     String[] departures = busStopsNames[i].split(" \\+ ");
                     String[] arrivals = busStopsNames[i+1].split(" \\+ ");
                     for(String departure : departures){
@@ -233,8 +279,7 @@ public class Route {
         }
         routes.addAll(reverseRoutes);
         for(Route r: routes){
-            Double travelTime = computeTravelTime(r.getBusLine(), r.getStartingPoint(), r.getDestination());
-            r.setTravelTime(travelTime);
+            computeBusSchedules(r);
         }
         return routes;
     }
