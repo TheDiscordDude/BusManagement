@@ -1,6 +1,5 @@
 package com.company;
 
-import java.time.Instant;
 import java.util.*;
 
 public class BusNetwork {
@@ -30,41 +29,52 @@ public class BusNetwork {
      * @param method    the method we wish to use : FASTEST path, SHORTEST path of FARMOST
      * @return The list of Bus route you need to take to get to your destination
      */
-    public List<Route> getPathBetween(BusStop start, BusStop finish, Method method) {
+    public List<Route> getPathBetween(BusStop start, BusStop finish, Date departureTime, Method method) {
 
         int nb = this.busStops.size();
 
         // initialisation
 
         double[] weights = new double[nb];
-        Arrays.fill(weights, 99999999);
+        Arrays.fill(weights, 999999999);
 
         List<Integer> usedNodesId = new ArrayList<>();
 
         Route[] predecessorTable = new Route[nb];
         Arrays.fill(predecessorTable, null);
 
+        int[] shceduleId = new int[nb];
+        Arrays.fill(shceduleId, -1);
+
         int currentNodeId = getBusStopId(start);
 
         // the first routes that need to be treated are those coming
-        List<Route> toBeTreated = findAllRoutesFrom(this.busStops.get(currentNodeId));
+        List<Route> toBeTreated;
 
         // to finish the initialization, we set the weight of the first node to 0
         weights[currentNodeId] = 0;
+        Date predecessorArrivalTime = departureTime;
         do {
             toBeTreated = new ArrayList<>(findAllRoutesFrom(this.busStops.get(currentNodeId)));
+
             for (Route r : toBeTreated){
+                // choper la date d'arriver de son predecesseur afin de :
+                Route predecessorRoute = predecessorTable[currentNodeId];
+                if(predecessorRoute != null)
+                    predecessorArrivalTime = predecessorRoute.getArrivalTime();
+
                 int id = getBusStopId(r.getDestination());
                 double weight;
 
                 switch (method){
                     case SHORTEST -> weight = r.getWeight(weights[currentNodeId]);
-                    case FASTEST -> weight = r.getWeight(weights[currentNodeId], Instant.now());
-                    default -> weight=99999999;
+                    case FASTEST -> weight = r.getWeight(weights[currentNodeId], predecessorArrivalTime);
+                    default -> weight=999999999;
                 }
                 if(weights[id] > weight ){
                     weights[id] = weight;
                     predecessorTable[id] = r;
+                    r.setChosenSchedule(predecessorArrivalTime);
                 }
             }
             usedNodesId.add(currentNodeId);
@@ -85,8 +95,7 @@ public class BusNetwork {
             }
 
             currentNodeId = electedNodeId;
-
-        }while (usedNodesId.size() < this.busStops.size());
+        }while (usedNodesId.size() < this.busStops.size() && currentNodeId != 9999);
 
         return getFinalChain(start, finish, predecessorTable);
     }
