@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -86,6 +87,24 @@ public class Route {
                 break;
             }
         }
+        /*
+        if(this.chosenSchedule == -1){
+            for(int i = 0; i < this.departureTimes.size(); i++){
+                Calendar c = Calendar.getInstance();
+                c.setTime(this.departureTimes.get(i));
+                c.add(Calendar.DATE, 1);
+                Date tomorrow = c.getTime();
+
+                if(tomorrow.after(date) || tomorrow.toString().equals(date.toString()) ) {
+                    this.chosenSchedule = i;
+                    this.departureTimes.set(i, tomorrow);
+                    break;
+                }
+            }
+
+        }
+        */
+
     }
 
     public Double getWeight(double predecessorWeight){
@@ -99,7 +118,7 @@ public class Route {
      * @return the weight as a Double
      */
     public Double getWeight(double predecessorWeight, Date arrivalTime){
-        // todo : use the arrival time to get the real weight
+
         Date nextDepartureTime = null;
         Double travelDuration = 0.0;
         Double waitingTime = 0.0;
@@ -137,12 +156,18 @@ public class Route {
     @Override
     public String toString() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault());
-        String departureTime = formatter.format(this.departureTimes.get(this.chosenSchedule).toInstant());
-        String arrivalTime = formatter.format(this.arrivalTimes.get(this.chosenSchedule).toInstant());
+        String departureTime = "";
+        String arrivalTime = "";
+
+
+        if(this.chosenSchedule > -1){
+            departureTime = formatter.format(this.departureTimes.get(this.chosenSchedule).toInstant());
+            arrivalTime = formatter.format(this.arrivalTimes.get(this.chosenSchedule).toInstant());
+        }
         return startingPoint + "("+ departureTime +") -> " + destination + " (" + arrivalTime + ") - "+this.busLine;
     }
 
-    public static void computeBusSchedules(Route r){
+    public static void computeBusSchedules(Route r, Calendar c){
 
         String filePath = "";
         if (r.getBusLine().equals("sibra1"))
@@ -191,10 +216,24 @@ public class Route {
                 try{
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault());
                     Instant currentTime  = Instant.now();
+
                     String instantStr = formatter.format(currentTime);
 
+                    Calendar c2 = Calendar.getInstance();
                     Date d1 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(instantStr + " " + timetable1[i]);
+                    c2.setTime(d1);
+                    c2.set(Calendar.MONTH, c.get(Calendar.MONTH));
+                    c2.set(Calendar.DATE, c.get(Calendar.DATE));
+                    c2.set(Calendar.YEAR, c.get(Calendar.YEAR));
+                    d1 = c2.getTime();
+
                     Date d2 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(instantStr + " " + timetable2[i]);
+                    c2.setTime(d2);
+                    c2.set(Calendar.MONTH, c.get(Calendar.MONTH));
+                    c2.set(Calendar.DATE, c.get(Calendar.DATE));
+                    c2.set(Calendar.YEAR, c.get(Calendar.YEAR));
+                    d2 = c2.getTime();
+
                     r.addDepartureTime(d1);
                     r.addArrivalTime(d2);
                 } catch (ParseException e) {
@@ -210,7 +249,7 @@ public class Route {
      * @param busStops
      * @return
      */
-    public static List<Route> load(List<BusStop> busStops){
+    public static List<Route> load(List<BusStop> busStops, Calendar c){
         List<String> filePaths = new ArrayList<>();
 
         filePaths.add("1_Poisy-ParcDesGlaisins.txt");
@@ -279,7 +318,8 @@ public class Route {
         }
         routes.addAll(reverseRoutes);
         for(Route r: routes){
-            computeBusSchedules(r);
+            // todo : use the time to determine if it's a weekend
+            computeBusSchedules(r, c);
         }
         return routes;
     }

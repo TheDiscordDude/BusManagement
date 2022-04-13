@@ -2,17 +2,18 @@ package com.company;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
 public class Main {
 
     public static void main(String[] args) {
 
         List<BusStop> busStops = BusStop.load();
 
-        List<Route> routes = Route.load(busStops);
+        BusNetwork network = new BusNetwork(busStops);
 
-        BusNetwork network = new BusNetwork(busStops, routes);
 
         BusStop b1;
         BusStop b2;
@@ -20,7 +21,7 @@ public class Main {
 
 
         switch (args.length){
-            case 2:{
+            case 3:{
                 b1 = network.findBusStop(args[0]);
                 b2 = network.findBusStop(args[1]);
                 try{
@@ -36,6 +37,12 @@ public class Main {
                 b2 = network.findBusStop("Pommaries");
                 break;
         }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(departureTime);
+        List<Route> routes = Route.load(busStops, calendar);
+        network.setRoutes(routes);
+
+        System.out.println(routes);
 
         System.out.println(routes.get(0).getStartingPoint());
         System.out.println(routes.get(0).getDestination());

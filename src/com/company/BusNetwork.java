@@ -6,8 +6,12 @@ public class BusNetwork {
     private List<BusStop> busStops;
     private List<Route> routes;
 
-    public BusNetwork(List<BusStop> busStops, List<Route> routes) {
+    public BusNetwork(List<BusStop> busStops) {
         this.busStops = busStops;
+        this.routes = new ArrayList<>();
+    }
+
+    public void setRoutes(List<Route> routes) {
         this.routes = routes;
     }
 
