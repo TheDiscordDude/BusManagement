@@ -27,10 +27,13 @@ So you should be able to run it without problem with version >= 15.
 
 ## How to use
 
-If you want to use the program you have to pass 3 arguments to it : 
+If you want to use the program you have to pass 2 required arguments to it : 
 - The Starting point: the bus stop you want to go from
 - The destination (pretty self-explanatory)
-- The Date and time you wish to go for example : 2022-04-12-07:00. Please Take in account that it does not support multi-days travel.
+
+2 more arguments can be added to the command :
+- the time of departure `HH-mm` i.e. `07:00`
+- The Date of departure `DD-MM-YYYY` i.e. `12-04-2022`. 
 
 #### Installation
 
