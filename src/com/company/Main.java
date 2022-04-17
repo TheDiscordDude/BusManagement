@@ -14,35 +14,50 @@ public class Main {
 
         BusNetwork network = new BusNetwork(busStops);
 
-
         BusStop b1;
         BusStop b2;
-        Date departureTime = Date.from(Instant.now());
+        Date departureTime;
 
+        b1 = network.findBusStop(args[0]);
+        b2 = network.findBusStop(args[1]);
 
-        switch (args.length){
-            case 3:{
-                b1 = network.findBusStop(args[0]);
-                b2 = network.findBusStop(args[1]);
-                try{
-                    departureTime = new SimpleDateFormat("yyyy-MM-dd-HH:mm").parse(args[2]);
-                } catch (ParseException e){
-                    e.printStackTrace();
-                    departureTime = Date.from(Instant.now());
-                }
-                break;
+        Calendar c1 = Calendar.getInstance();
+
+        if(args.length >= 4){
+            try {
+                Date date = new SimpleDateFormat("dd-MM-yyyy").parse(args[3]);
+                c1.setTime(date);
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
-            default:
-                b1 = network.findBusStop("POISY_COLLÈGE");
-                b2 = network.findBusStop("Pommaries");
-                break;
         }
+
+        if(args.length >= 3){
+            try {
+                String[] parts = args[2].split(":");
+                int hours = Integer.parseInt(parts[0]);
+                int minutes = Integer.parseInt(parts[1]);
+                c1.set(Calendar.HOUR_OF_DAY, hours);
+                c1.set(Calendar.MINUTE, minutes);
+                c1.set(Calendar.SECOND, 0);
+
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        departureTime = c1.getTime();
+
+
+
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(departureTime);
         List<Route> routes = Route.load(busStops, calendar);
         network.setRoutes(routes);
 
-        System.out.println(routes);
+        for(Route r : routes){
+            System.out.println(r);
+        }
+        //System.out.println(routes);
 
         System.out.println(routes.get(0).getStartingPoint());
         System.out.println(routes.get(0).getDestination());

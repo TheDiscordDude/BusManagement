@@ -87,24 +87,6 @@ public class Route {
                 break;
             }
         }
-        /*
-        if(this.chosenSchedule == -1){
-            for(int i = 0; i < this.departureTimes.size(); i++){
-                Calendar c = Calendar.getInstance();
-                c.setTime(this.departureTimes.get(i));
-                c.add(Calendar.DATE, 1);
-                Date tomorrow = c.getTime();
-
-                if(tomorrow.after(date) || tomorrow.toString().equals(date.toString()) ) {
-                    this.chosenSchedule = i;
-                    this.departureTimes.set(i, tomorrow);
-                    break;
-                }
-            }
-
-        }
-        */
-
     }
 
     public Double getWeight(double predecessorWeight){
@@ -135,6 +117,10 @@ public class Route {
         return predecessorWeight+ waitingTime + travelDuration;
     }
 
+    public Double getWeight(double predecessorWeight, Date arrivalTime, Route[] predecessorTable){
+        return 0.0;
+    }
+
     public Date getArrivalTime(){
 
         return this.arrivalTimes.get(this.chosenSchedule);
@@ -155,19 +141,28 @@ public class Route {
 
     @Override
     public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault());
-        String departureTime = "";
-        String arrivalTime = "";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "dd HH:mm").withZone(ZoneId.systemDefault());
+        String departureTime = null;
+        String arrivalTime = null;
 
 
         if(this.chosenSchedule > -1){
             departureTime = formatter.format(this.departureTimes.get(this.chosenSchedule).toInstant());
             arrivalTime = formatter.format(this.arrivalTimes.get(this.chosenSchedule).toInstant());
         }
-        return startingPoint + "("+ departureTime +") -> " + destination + " (" + arrivalTime + ") - "+this.busLine;
+
+        String result = "";
+        if(arrivalTime != null){
+            result = startingPoint + "("+ departureTime +") -> " + destination + " (" + arrivalTime + ") - "+this.busLine;
+        } else {
+            result = startingPoint + " -> " + destination + " ("+ this.departureTimes.size() +")";
+        }
+
+        return result;
     }
 
-    public static void computeBusSchedules(Route r, Calendar c){
+    public static void computeBusSchedules(Route r, Calendar departureCalender){
+        Date departureTime = departureCalender.getTime();
 
         String filePath = "";
         if (r.getBusLine().equals("sibra1"))
@@ -195,11 +190,29 @@ public class Route {
         String line2 = null;
 
         if(matcher1.find()){
-            match = matcher1.group(0);
+
+            if(departureCalender.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || departureCalender.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY )
+            {
+                matcher1.find();
+                match = matcher1.group(0);
+            }
+            else {
+                match = matcher1.group(0);
+            }
+
             line1 = match.split("\n")[0];
             line2 = match.split("\n")[1];
         } else if(matcher2.find()){
-            match = matcher2.group(0);
+
+            if(departureCalender.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || departureCalender.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY )
+            {
+                matcher2.find();
+                match = matcher2.group(0);
+            }
+            else {
+                match = matcher2.group(0);
+            }
+
             line1 = match.split("\n")[0];
             line2 = match.split("\n")[2];
         }
@@ -208,6 +221,7 @@ public class Route {
         String[] timetable2 = line2.split(" ");
 
         Pattern timePattern = Pattern.compile("[0-9]*:[0-9]*");
+
         for(int i = 0; i < timetable1.length; i++){
             Matcher m1 = timePattern.matcher(timetable1[i]);
             Matcher m2 = timePattern.matcher(timetable2[i]);
@@ -219,23 +233,39 @@ public class Route {
 
                     String instantStr = formatter.format(currentTime);
 
+
                     Calendar c2 = Calendar.getInstance();
                     Date d1 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(instantStr + " " + timetable1[i]);
                     c2.setTime(d1);
-                    c2.set(Calendar.MONTH, c.get(Calendar.MONTH));
-                    c2.set(Calendar.DATE, c.get(Calendar.DATE));
-                    c2.set(Calendar.YEAR, c.get(Calendar.YEAR));
+                    c2.set(Calendar.MONTH, departureCalender.get(Calendar.MONTH));
+                    c2.set(Calendar.DATE, departureCalender.get(Calendar.DATE));
+                    c2.set(Calendar.YEAR, departureCalender.get(Calendar.YEAR));
                     d1 = c2.getTime();
 
                     Date d2 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(instantStr + " " + timetable2[i]);
                     c2.setTime(d2);
-                    c2.set(Calendar.MONTH, c.get(Calendar.MONTH));
-                    c2.set(Calendar.DATE, c.get(Calendar.DATE));
-                    c2.set(Calendar.YEAR, c.get(Calendar.YEAR));
+                    c2.set(Calendar.MONTH, departureCalender.get(Calendar.MONTH));
+                    c2.set(Calendar.DATE, departureCalender.get(Calendar.DATE));
+                    c2.set(Calendar.YEAR, departureCalender.get(Calendar.YEAR));
                     d2 = c2.getTime();
+                    if(r.getDestination().toString().equals("Pomaries"))
+                    {
+                        int d = 0;
+                    }
 
-                    r.addDepartureTime(d1);
-                    r.addArrivalTime(d2);
+                    if(d1.after(departureTime) || d1.toString().equals(departureTime.toString())){
+                        r.addDepartureTime(d1);
+                        r.addArrivalTime(d2);
+                    }
+                    else{
+                        Calendar newCalendar = Calendar.getInstance();
+                        newCalendar.set(Calendar.YEAR, departureCalender.get(Calendar.YEAR));
+                        newCalendar.set(Calendar.MONTH, departureCalender.get(Calendar.MONTH));
+                        newCalendar.set(Calendar.DAY_OF_YEAR, departureCalender.get(Calendar.DAY_OF_YEAR) +1 );
+                        newCalendar.set(Calendar.HOUR_OF_DAY, 0);
+                        newCalendar.set(Calendar.MINUTE, 0);
+                        computeBusSchedules(r, newCalendar);
+                    }
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
@@ -318,7 +348,6 @@ public class Route {
         }
         routes.addAll(reverseRoutes);
         for(Route r: routes){
-            // todo : use the time to determine if it's a weekend
             computeBusSchedules(r, c);
         }
         return routes;

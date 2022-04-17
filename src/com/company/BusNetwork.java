@@ -35,20 +35,17 @@ public class BusNetwork {
      */
     public List<Route> getPathBetween(BusStop start, BusStop finish, Date departureTime, Method method) {
 
-        int nb = this.busStops.size();
+        // We initialise the process
 
-        // initialisation
+        int size = this.busStops.size();
 
-        double[] weights = new double[nb];
+        double[] weights = new double[size];
         Arrays.fill(weights, 999999999);
 
         List<Integer> usedNodesId = new ArrayList<>();
 
-        Route[] predecessorTable = new Route[nb];
+        Route[] predecessorTable = new Route[size];
         Arrays.fill(predecessorTable, null);
-
-        int[] shceduleId = new int[nb];
-        Arrays.fill(shceduleId, -1);
 
         int currentNodeId = getBusStopId(start);
 
@@ -62,10 +59,9 @@ public class BusNetwork {
             toBeTreated = new ArrayList<>(findAllRoutesFrom(this.busStops.get(currentNodeId)));
 
             for (Route r : toBeTreated){
-                // choper la date d'arriver de son predecesseur afin de :
                 Route predecessorRoute = predecessorTable[currentNodeId];
                 if(predecessorRoute != null)
-                    predecessorArrivalTime = predecessorRoute.getArrivalTime();
+                    predecessorArrivalTime = predecessorRoute.getArrivalTime(); // here
 
                 int id = getBusStopId(r.getDestination());
                 double weight;
@@ -86,7 +82,7 @@ public class BusNetwork {
             double minValue = 9999;
             int electedNodeId = 9999;
 
-            for(int i =0; i < weights.length ;i ++){
+            for(int i =0; i < size ;i ++){
                 if(!usedNodesId.contains(i) && weights[i] != 99999999 ){
                     if(minValue > weights[i]){
                         minValue = weights[i];
