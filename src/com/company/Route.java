@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -117,8 +116,18 @@ public class Route {
         return predecessorWeight+ waitingTime + travelDuration;
     }
 
-    public Double getWeight(double predecessorWeight, Date arrivalTime, Route[] predecessorTable){
-        return 0.0;
+    public Double getWeight(double predecessorWeight, Date arrivalTime, HashMap<BusStop, Route> predecessorTable){
+        Double weight = this.getWeight(predecessorWeight, arrivalTime);
+        List<Route> chain = new ArrayList<>();
+
+        BusStop currentNode = destination;
+
+        while (!currentNode.equals(startingPoint) && !(predecessorTable.get(currentNode)==null)){
+            chain.add(predecessorTable.get(currentNode));
+            currentNode = predecessorTable.get(currentNode).getStartingPoint();
+        }
+        weight += chain.size();
+        return weight;
     }
 
     public Date getArrivalTime(){
