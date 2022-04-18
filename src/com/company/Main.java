@@ -13,12 +13,12 @@ public class Main {
 
         BusNetwork network = new BusNetwork(busStops);
 
-        BusStop b1;
-        BusStop b2;
+        BusStop start;
+        BusStop destination;
         Date departureTime;
 
-        b1 = network.findBusStop(args[0]);
-        b2 = network.findBusStop(args[1]);
+        start = network.findBusStop(args[0]);
+        destination = network.findBusStop(args[1]);
 
         Calendar c1 = Calendar.getInstance();
 
@@ -51,12 +51,29 @@ public class Main {
         List<Route> routes = Route.load(busStops, calendar);
         network.setRoutes(routes);
 
-        List<Route> shortestPath = network.getPathBetween(b1, b2, departureTime, Method.SHORTEST);
-        List<Route> fastestPath = network.getPathBetween(b1, b2, departureTime, Method.FASTEST);
-        List<Route> farmostPath = network.getPathBetween(b1, b2, departureTime, Method.FARMOST);
+        List<Route> shortestPath = network.getPathBetween(start, destination, departureTime, Method.SHORTEST);
+        List<Route> fastestPath = network.getPathBetween(start, destination, departureTime, Method.FASTEST);
+        List<Route> farmostPath = network.getPathBetween(start, destination, departureTime, Method.FARMOST);
 
-        System.out.println(shortestPath);
-        System.out.println(fastestPath);
-        System.out.println(farmostPath);
+        System.out.println("Shortest Path to " + destination);
+        for(Route r : shortestPath){
+            System.out.println("\t"+r);
+        }
+        System.out.println();
+
+
+        System.out.println("Fastest Path to " + destination);
+        for(Route r : fastestPath){
+            System.out.println("\t"+r);
+        }
+        System.out.println();
+
+
+        System.out.println("Farmost Path to " + destination);
+        for(Route r : farmostPath){
+            System.out.println("\t"+r);
+        }
+        System.out.println();
+
     }
 }

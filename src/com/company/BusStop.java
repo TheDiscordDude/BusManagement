@@ -35,10 +35,10 @@ public class BusStop {
      * @return a complete list of bus stops
      */
     public static List<BusStop> load() {
-        List<String> filePaths = new ArrayList<String>();
+        List<String> filePaths = new ArrayList<>();
         filePaths.add("1_Poisy-ParcDesGlaisins.txt");
         filePaths.add("2_Piscine-Patinoire_Campus.txt");
-        List<BusStop> busStops = new ArrayList<BusStop>();
+        List<BusStop> busStops = new ArrayList<>();
 
         for (String filePath : filePaths) {
             try {

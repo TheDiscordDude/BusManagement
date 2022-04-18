@@ -3,7 +3,7 @@ package com.company;
 import java.util.*;
 
 public class BusNetwork {
-    private List<BusStop> busStops;
+    private final List<BusStop> busStops;
     private List<Route> routes;
 
     public BusNetwork(List<BusStop> busStops) {
@@ -39,14 +39,14 @@ public class BusNetwork {
 
         int size = this.busStops.size();
 
-        HashMap<BusStop, Double> weights = new HashMap<BusStop, Double>(size);
+        HashMap<BusStop, Double> weights = new HashMap<>(size);
         for(BusStop b: this.busStops){
             weights.put(b, 999999999.9);
         }
 
         List<BusStop> usedNodes = new ArrayList<>();
 
-        HashMap<BusStop, Route> predecessorTable = new HashMap<BusStop, Route>(size);
+        HashMap<BusStop, Route> predecessorTable = new HashMap<>(size);
         for(BusStop b: this.busStops){
             predecessorTable.put(b, null);
         }
@@ -71,15 +71,9 @@ public class BusNetwork {
                 double weight;
 
                 switch (method){
-                    case SHORTEST -> {
-                        weight = r.getWeight(weights.get(currentNode));
-                    }
-                    case FASTEST -> {
-                        weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime);
-                    }
-                    case FARMOST -> {
-                        weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime, predecessorTable);
-                    }
+                    case SHORTEST -> weight = r.getWeight(weights.get(currentNode));
+                    case FASTEST -> weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime);
+                    case FARMOST -> weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime, predecessorTable);
                     default -> weight=999999999.9;
                 }
 
@@ -110,21 +104,6 @@ public class BusNetwork {
             currentNode = electedNode;
         }while (usedNodes.size() < this.busStops.size() && currentNode != null);
         return getFinalChain(start, finish, predecessorTable);
-    }
-
-
-    /**
-     * This method returns the id of the bus Stop in the "busStops" array
-     * @param busStop the bus stop you wish to get the id from
-     * @return an int : -1 if the bus stop has not been found and a regular int if it has been found
-     */
-    private int getBusStopId(BusStop busStop ){
-        for(int i = 0; i < this.busStops.size(); i++){
-            if(this.busStops.get(i).equals(busStop )){
-                return i;
-            }
-        }
-        return -1;
     }
 
     /** Finds all the routes going from the bus stop passed in parameter
