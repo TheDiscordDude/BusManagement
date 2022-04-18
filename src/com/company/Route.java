@@ -72,10 +72,12 @@ public class Route {
 
     private void addDepartureTime(Date t){
         this.departureTimes.add(t);
+        Collections.sort(this.departureTimes);
     }
 
     private void addArrivalTime(Date t){
         this.arrivalTimes.add(t);
+        Collections.sort(this.arrivalTimes);
     }
 
     public void setChosenSchedule(Date date) {
@@ -150,7 +152,7 @@ public class Route {
 
     @Override
     public String toString() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "dd HH:mm").withZone(ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern( "EEEE HH:mm").withZone(ZoneId.systemDefault());
         String departureTime = null;
         String arrivalTime = null;
 
