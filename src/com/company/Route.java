@@ -17,8 +17,8 @@ public class Route {
     private BusStop startingPoint;
     private BusStop destination;
     private String busLine;
-    private List<Date> departureTimes;
-    private List<Date> arrivalTimes;
+    private final List<Date> departureTimes;
+    private final List<Date> arrivalTimes;
     private int chosenSchedule;
 
     public Route(BusStop fromStop, BusStop toStop, String busLine) {
@@ -102,9 +102,9 @@ public class Route {
      */
     public Double getWeight(double predecessorWeight, Date arrivalTime){
 
-        Date nextDepartureTime = null;
-        Double travelDuration = 0.0;
-        Double waitingTime = 0.0;
+        Date nextDepartureTime ;
+        double travelDuration = 0.0;
+        double waitingTime = 0.0;
         for(int i = 0; i < this.departureTimes.size(); i++){
             if(this.departureTimes.get(i).after(arrivalTime) || this.departureTimes.get(i).toString().equals(arrivalTime.toString()) ) {
                 nextDepartureTime = this.departureTimes.get(i);
@@ -162,7 +162,7 @@ public class Route {
             arrivalTime = formatter.format(this.arrivalTimes.get(this.chosenSchedule).toInstant());
         }
 
-        String result = "";
+        String result ;
         if(arrivalTime != null){
             result = startingPoint + "("+ departureTime +") -> " + destination + " (" + arrivalTime + ") - "+this.busLine;
         } else {
@@ -189,6 +189,8 @@ public class Route {
             content = Files.readString(Paths.get(filePath));
         } catch (IOException e){
             e.printStackTrace();
+
+            System.exit(2);
         }
 
         Pattern pattern1 = Pattern.compile(starting+" (-|[0-9]).*\\r\\n" +destination+" (-|[0-9]).*", Pattern.MULTILINE);
@@ -196,7 +198,7 @@ public class Route {
         Matcher matcher1 = pattern1.matcher(content);
         Matcher matcher2 = pattern2.matcher(content);
 
-        String match = null;
+        String match;
         String line1 = null;
         String line2 = null;
 
@@ -259,10 +261,6 @@ public class Route {
                     c2.set(Calendar.DATE, departureCalender.get(Calendar.DATE));
                     c2.set(Calendar.YEAR, departureCalender.get(Calendar.YEAR));
                     d2 = c2.getTime();
-                    if(r.getDestination().toString().equals("Pomaries"))
-                    {
-                        int d = 0;
-                    }
 
                     if(d1.after(departureTime) || d1.toString().equals(departureTime.toString())){
                         r.addDepartureTime(d1);
@@ -287,8 +285,8 @@ public class Route {
 
 
     /** Loads every bus routes from the files.
-     * @param busStops
-     * @return
+     * @param busStops All the busStops loaded
+     * @return the list of routes
      */
     public static List<Route> load(List<BusStop> busStops, Calendar c){
         List<String> filePaths = new ArrayList<>();
