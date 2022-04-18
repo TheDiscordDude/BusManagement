@@ -1,7 +1,6 @@
 package com.company;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -47,26 +46,17 @@ public class Main {
         }
         departureTime = c1.getTime();
 
-
-
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(departureTime);
         List<Route> routes = Route.load(busStops, calendar);
         network.setRoutes(routes);
 
-        for(Route r : routes){
-            System.out.println(r);
-        }
-        //System.out.println(routes);
-
-        System.out.println(routes.get(0).getStartingPoint());
-        System.out.println(routes.get(0).getDestination());
-        System.out.println(routes.get(0).getDepartureTimes());
-        System.out.println(routes.get(0).getArrivalTimes());
-
         List<Route> shortestPath = network.getPathBetween(b1, b2, departureTime, Method.SHORTEST);
         List<Route> fastestPath = network.getPathBetween(b1, b2, departureTime, Method.FASTEST);
+        List<Route> farmostPath = network.getPathBetween(b1, b2, departureTime, Method.FARMOST);
+
         System.out.println(shortestPath);
         System.out.println(fastestPath);
+        System.out.println(farmostPath);
     }
 }

@@ -39,54 +39,66 @@ public class BusNetwork {
 
         int size = this.busStops.size();
 
-        double[] weights = new double[size];
-        Arrays.fill(weights, 999999999);
+        HashMap<BusStop, Double> weights = new HashMap<BusStop, Double>(size);
+        for(BusStop b: this.busStops){
+            weights.put(b, 999999999.9);
+        }
 
-        List<Integer> usedNodesId = new ArrayList<>();
+        List<BusStop> usedNodes = new ArrayList<>();
 
-        Route[] predecessorTable = new Route[size];
-        Arrays.fill(predecessorTable, null);
+        HashMap<BusStop, Route> predecessorTable = new HashMap<BusStop, Route>(size);
+        for(BusStop b: this.busStops){
+            predecessorTable.put(b, null);
+        }
 
-        int currentNodeId = getBusStopId(start);
+        BusStop currentNode = start;
 
         // the first routes that need to be treated are those coming
         List<Route> toBeTreated;
 
         // to finish the initialization, we set the weight of the first node to 0
-        weights[currentNodeId] = 0;
+        weights.put(currentNode, 0.0);
         Date predecessorArrivalTime = departureTime;
         do {
-            toBeTreated = new ArrayList<>(findAllRoutesFrom(this.busStops.get(currentNodeId)));
+            toBeTreated = new ArrayList<>(findAllRoutesFrom(currentNode));
 
             for (Route r : toBeTreated){
-                Route predecessorRoute = predecessorTable[currentNodeId];
+                Route predecessorRoute;
+                predecessorRoute = predecessorTable.get(currentNode);
                 if(predecessorRoute != null)
-                    predecessorArrivalTime = predecessorRoute.getArrivalTime(); // here
+                    predecessorArrivalTime = predecessorRoute.getArrivalTime();
 
-                int id = getBusStopId(r.getDestination());
                 double weight;
 
                 switch (method){
-                    case SHORTEST -> weight = r.getWeight(weights[currentNodeId]);
-                    case FASTEST -> weight = r.getWeight(weights[currentNodeId], predecessorArrivalTime);
-                    default -> weight=999999999;
+                    case SHORTEST -> {
+                        weight = r.getWeight(weights.get(currentNode));
+                    }
+                    case FASTEST -> {
+                        weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime);
+                    }
+                    case FARMOST -> {
+                        weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime, predecessorTable);
+                    }
+                    default -> weight=999999999.9;
                 }
-                if(weights[id] > weight ){
-                    weights[id] = weight;
-                    predecessorTable[id] = r;
+
+                if(weights.get(r.getDestination()) > weight ){
+                    weights.put(r.getDestination(), weight);
+                    predecessorTable.put(r.getDestination(), r);
                     r.setChosenSchedule(predecessorArrivalTime);
                 }
             }
-            usedNodesId.add(currentNodeId);
+            usedNodes.add(currentNode);
 
             double minValue = 9999;
-            int electedNodeId = 9999;
+            BusStop electedNode = null;
 
-            for(int i =0; i < size ;i ++){
-                if(!usedNodesId.contains(i) && weights[i] != 99999999 ){
-                    if(minValue > weights[i]){
-                        minValue = weights[i];
-                        electedNodeId = i;
+            for(BusStop bs : this.busStops){
+                if(!usedNodes.contains(bs) && weights.get(bs) != 999999999.9){
+                    if(minValue > weights.get(bs)){
+                        minValue = weights.get(bs);
+                        electedNode = bs;
                     }
                     /*
                         todo: update the weight of the other nodes when a better path is found (verify if that's actually useful ... pretty sure it's not)
@@ -94,9 +106,9 @@ public class BusNetwork {
                 }
             }
 
-            currentNodeId = electedNodeId;
-        }while (usedNodesId.size() < this.busStops.size() && currentNodeId != 9999);
 
+            currentNode = electedNode;
+        }while (usedNodes.size() < this.busStops.size() && currentNode != null);
         return getFinalChain(start, finish, predecessorTable);
     }
 
@@ -129,22 +141,20 @@ public class BusNetwork {
         return result;
     }
 
-
     /** Constructs the final chain of routes from the predecessor table from the dijkstra algorithm
      * @param startingPoint The starting point.
      * @param destination The bus stop where we want to go
      * @param predecessorTable the predecessor table generated from the dijkstra algorithm
      * @return a List of routes describing how to get to our destination from the starting point
      */
-    private List<Route> getFinalChain(BusStop startingPoint, BusStop destination, Route[] predecessorTable){
+    private List<Route> getFinalChain(BusStop startingPoint, BusStop destination, HashMap<BusStop, Route> predecessorTable){
         List<Route> finalChain = new ArrayList<>();
 
-        int startingId = getBusStopId(startingPoint);
-        int currentNodeId = getBusStopId(destination);
+        BusStop currentNode = destination;
 
-        while (currentNodeId != startingId){
-            finalChain.add(predecessorTable[currentNodeId]);
-            currentNodeId = getBusStopId(predecessorTable[currentNodeId].getStartingPoint());
+        while (!currentNode.equals(startingPoint)){
+            finalChain.add(predecessorTable.get(currentNode));
+            currentNode = predecessorTable.get(currentNode).getStartingPoint();
         }
         Collections.reverse(finalChain);
         return finalChain;
