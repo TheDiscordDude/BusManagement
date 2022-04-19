@@ -1,27 +1,82 @@
 package com.company;
-
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
-        BusLine sibra1 = new BusLine("sibra1", "1_Poisy-ParcDesGlaisins.txt");
-        BusLine sibra2 = new BusLine("sibra2", "2_Piscine-Patinoire_Campus.txt");
-        List<BusLine> busLines = new ArrayList<BusLine>();
+        List<BusStop> busStops = BusStop.load();
 
-        busLines.add(sibra1);
-        busLines.add(sibra2);
+        BusNetwork network = new BusNetwork(busStops);
 
-        BusNetwork network = new BusNetwork(busLines);
-        System.out.println(network);
+        BusStop start;
+        BusStop destination;
+        Date departureTime;
 
-        BusStop b1 = network.findBusStop("France_Barattes");
-        BusStop b2 = network.findBusStop("Parc_des_Sports");
+        start = network.findBusStop(args[0]);
+        destination = network.findBusStop(args[1]);
 
-        System.out.println(b1);
-        System.out.println(b2);
+        Calendar c1 = Calendar.getInstance();
 
-        System.out.println(network.getShortestPathBetween(b1, b2));
+        if(args.length >= 4){
+            try {
+                Date date = new SimpleDateFormat("dd-MM-yyyy").parse(args[3]);
+                c1.setTime(date);
+            } catch (ParseException e) {
+                System.out.println("ParseException. Please enter a valid date. For example : 30-12-2022");
+                e.printStackTrace();
+                System.exit(5);
+            }
+        }
+
+        if(args.length >= 3){
+            try {
+                String[] parts = args[2].split(":");
+                int hours = Integer.parseInt(parts[0]);
+                int minutes = Integer.parseInt(parts[1]);
+                c1.set(Calendar.HOUR_OF_DAY, hours);
+                c1.set(Calendar.MINUTE, minutes);
+                c1.set(Calendar.SECOND, 0);
+
+            } catch (NumberFormatException e) {
+                System.out.println("NumberFormatException. Please enter a valid time in 24h format. For example : 07:30");
+                e.printStackTrace();
+                System.exit(4);
+            }
+        }
+        departureTime = c1.getTime();
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(departureTime);
+        List<Route> routes = Route.load(busStops, calendar);
+        network.setRoutes(routes);
+
+        List<Route> shortestPath = network.getPathBetween(start, destination, departureTime, Method.SHORTEST);
+        List<Route> fastestPath = network.getPathBetween(start, destination, departureTime, Method.FASTEST);
+        List<Route> farmostPath = network.getPathBetween(start, destination, departureTime, Method.FARMOST);
+
+        System.out.println("Shortest Path to " + destination);
+        for(Route r : shortestPath){
+            System.out.println("\t"+r);
+        }
+        System.out.println();
+
+
+        System.out.println("Fastest Path to " + destination);
+        for(Route r : fastestPath){
+            System.out.println("\t"+r);
+        }
+        System.out.println();
+
+
+        System.out.println("Farmost Path to " + destination);
+        for(Route r : farmostPath){
+            System.out.println("\t"+r);
+        }
+        System.out.println();
+
     }
 }

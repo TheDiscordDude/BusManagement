@@ -1,120 +1,146 @@
 package com.company;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class BusNetwork {
-    private List<BusLine> busLines;
+    private final List<BusStop> busStops;
+    private List<Route> routes;
 
-    public BusNetwork(List<BusLine> busLines){
-        this.busLines = busLines;
+    public BusNetwork(List<BusStop> busStops) {
+        this.busStops = busStops;
+        this.routes = new ArrayList<>();
     }
 
-    public BusNetwork(){
-        this(new ArrayList<BusLine>());
-    }
-
-    public void addBusLine(String name, String filePath){
-        BusLine line = new BusLine(name, filePath);
-        this.busLines.add(line);
-    }
-
-    public void addBusLine(BusLine line){
-        this.busLines.add(line);
-    }
-
-    public Path getShortestPathBetween(BusStop from, BusStop to ){
-        List<BusLine> availableDepartureLines = new ArrayList<>();
-        List<BusLine> availableArrivalLines = new ArrayList<>();
-
-        for(BusLine l : this.busLines){
-            if(l.contains(from)){
-                availableDepartureLines.add(l);
-            }
-            if(l.contains(to)){
-                availableArrivalLines.add(l);
-            }
-        }
-
-        List<List<BusLine>> allPossibilities = new ArrayList<>(); // cartesian product between l1 and l2
-        List<BusLine> completeLines = new ArrayList<>();
-
-        for(BusLine l1 : availableDepartureLines){
-            for(BusLine l2 : availableArrivalLines){
-                if(l1 == l2)
-                    completeLines.add(l1);
-                else{
-                    List<BusLine> p = new ArrayList<>();
-                    p.add(l1);
-                    p.add(l2);
-                    allPossibilities.add(p);
-                }
-            }
-        }
-        // All the paths are going in there
-        List<Path> paths = new ArrayList<Path>();
-
-        // We check the shortest path for each complete line
-        if(completeLines.size() > 0){
-            for(BusLine l: completeLines){
-                Path p = new Path();
-                p.addPath(l, l.getShortestPathBetween(from, to));
-                paths.add(p);
-            }
-        }
-
-        // we then need to check the shortest path for routes with different BusLines :
-        for(List<BusLine> ls : allPossibilities){
-            BusStop commonStop = BusLine.commonStop(ls.get(0), ls.get(1));
-            Path p = new Path();
-            p.addPath(ls.get(0), ls.get(0).getShortestPathBetween(from, commonStop));
-            p.addPath(ls.get(1), ls.get(1).getShortestPathBetween(commonStop, to));
-            paths.add(p);
-        }
-
-        Path result = paths.get(0);
-        int i = 0;
-        do {
-            if(result.length() > paths.get(i).length()){
-                result = paths.get(i);
-            }
-            i++;
-        }while (i < paths.size());
-        
-        return result;
-    }
-    public List<BusRoute> getFastestPathBetween(BusStop from, BusStop to ){
-        return null;
+    public void setRoutes(List<Route> routes) {
+        this.routes = routes;
     }
 
     public BusStop findBusStop(String name){
-        BusStop b = new BusStop(name);
-        for(BusLine l : this.busLines){
-            for(BusStop b1 : l.getBusStops()){
-                if(b1.equals(b)){
-                    return b1;
-                }
+        BusStop result = null;
+        for(BusStop b : this.busStops){
+            if(b.getName().equals(name)){
+                result = b;
+                break;
             }
         }
-        return null;
+        return result;
     }
 
-    public boolean contains(BusStop busStop){
-        for(BusLine line : this.busLines){
-            if(line.contains(busStop))
-                return true;
+    /**
+     * Returns the list of Bus route you need to take to get to your destination
+     * @param start     Our point of origin
+     * @param finish    The destination we wish to reach
+     * @param method    the method we wish to use : FASTEST path, SHORTEST path of FARMOST
+     * @return The list of Bus route you need to take to get to your destination
+     */
+    public List<Route> getPathBetween(BusStop start, BusStop finish, Date departureTime, Method method) {
+
+        // We initialise the process
+
+        int size = this.busStops.size();
+
+        HashMap<BusStop, Double> weights = new HashMap<>(size);
+        for(BusStop b: this.busStops){
+            weights.put(b, 999999999.9);
         }
-        return false;
+
+        List<BusStop> usedNodes = new ArrayList<>();
+
+        HashMap<BusStop, Route> predecessorTable = new HashMap<>(size);
+        for(BusStop b: this.busStops){
+            predecessorTable.put(b, null);
+        }
+
+        BusStop currentNode = start;
+
+        // the first routes that need to be treated are those coming
+        List<Route> toBeTreated;
+
+        // to finish the initialization, we set the weight of the first node to 0
+        weights.put(currentNode, 0.0);
+        Date predecessorArrivalTime = departureTime;
+        do {
+            toBeTreated = new ArrayList<>(findAllRoutesFrom(currentNode));
+
+            for (Route r : toBeTreated){
+                Route predecessorRoute;
+                predecessorRoute = predecessorTable.get(currentNode);
+                if(predecessorRoute != null)
+                    predecessorArrivalTime = predecessorRoute.getArrivalTime();
+
+                double weight;
+
+                switch (method){
+                    case SHORTEST -> weight = r.getWeight(weights.get(currentNode));
+                    case FASTEST -> weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime);
+                    case FARMOST -> weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime, predecessorTable);
+                    default -> weight=999999999.9;
+                }
+
+                if(weights.get(r.getDestination()) > weight ){
+                    weights.put(r.getDestination(), weight);
+                    predecessorTable.put(r.getDestination(), r);
+                    r.setChosenSchedule(predecessorArrivalTime);
+                }
+            }
+            usedNodes.add(currentNode);
+
+            double minValue = 9999;
+            BusStop electedNode = null;
+
+            for(BusStop bs : this.busStops){
+                if(!usedNodes.contains(bs) && weights.get(bs) != 999999999.9){
+                    if(minValue > weights.get(bs)){
+                        minValue = weights.get(bs);
+                        electedNode = bs;
+                    }
+                }
+            }
+
+
+            currentNode = electedNode;
+        }while (usedNodes.size() < this.busStops.size() && currentNode != null);
+        return getFinalChain(start, finish, predecessorTable);
+    }
+
+    /** Finds all the routes going from the bus stop passed in parameter
+     * @param startingPoint the starting point
+     * @return a list of routes going from the starting point to other stops
+     */
+    public List<Route> findAllRoutesFrom(BusStop startingPoint){
+        List<Route> result = new ArrayList<>();
+        for(Route r : this.routes){
+            if(r.getStartingPoint().equals(startingPoint)){
+                result.add(r);
+            }
+        }
+        return result;
+    }
+
+    /** Constructs the final chain of routes from the predecessor table from the dijkstra algorithm
+     * @param startingPoint The starting point.
+     * @param destination The bus stop where we want to go
+     * @param predecessorTable the predecessor table generated from the dijkstra algorithm
+     * @return a List of routes describing how to get to our destination from the starting point
+     */
+    private List<Route> getFinalChain(BusStop startingPoint, BusStop destination, HashMap<BusStop, Route> predecessorTable){
+        List<Route> finalChain = new ArrayList<>();
+
+        BusStop currentNode = destination;
+
+        while (!currentNode.equals(startingPoint)){
+            finalChain.add(predecessorTable.get(currentNode));
+            currentNode = predecessorTable.get(currentNode).getStartingPoint();
+        }
+        Collections.reverse(finalChain);
+        return finalChain;
     }
 
     @Override
     public String toString() {
-        String result = "BusNetwork{";
-        for(BusLine line : this.busLines){
-            result += line.toString();
-        }
-        result+="}";
-        return result;
+        return "BusNetwork{" +
+                "busStops=" + busStops.size() +
+                ", routes=" + routes.size() +
+                '}';
     }
-
 }
