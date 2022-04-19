@@ -1,0 +1,185 @@
+@startuml
+
+/' diagram meta data start
+config=StructureConfiguration;
+{
+  "projectClassification": {
+    "searchMode": "OpenProject", // OpenProject, AllProjects
+    "includedProjects": "",
+    "pathEndKeywords": "*.impl",
+    "isClientPath": "",
+    "isClientName": "",
+    "isTestPath": "",
+    "isTestName": "",
+    "isMappingPath": "",
+    "isMappingName": "",
+    "isDataAccessPath": "",
+    "isDataAccessName": "",
+    "isDataStructurePath": "",
+    "isDataStructureName": "",
+    "isInterfaceStructuresPath": "",
+    "isInterfaceStructuresName": "",
+    "isEntryPointPath": "",
+    "isEntryPointName": "",
+    "treatFinalFieldsAsMandatory": false
+  },
+  "graphRestriction": {
+    "classPackageExcludeFilter": "",
+    "classPackageIncludeFilter": "",
+    "classNameExcludeFilter": "",
+    "classNameIncludeFilter": "",
+    "methodNameExcludeFilter": "",
+    "methodNameIncludeFilter": "",
+    "removeByInheritance": "", // inheritance/annotation based filtering is done in a second step
+    "removeByAnnotation": "",
+    "removeByClassPackage": "", // cleanup the graph after inheritance/annotation based filtering is done
+    "removeByClassName": "",
+    "cutMappings": false,
+    "cutEnum": true,
+    "cutTests": true,
+    "cutClient": true,
+    "cutDataAccess": false,
+    "cutInterfaceStructures": false,
+    "cutDataStructures": false,
+    "cutGetterAndSetter": true,
+    "cutConstructors": true
+  },
+  "graphTraversal": {
+    "forwardDepth": 6,
+    "backwardDepth": 6,
+    "classPackageExcludeFilter": "",
+    "classPackageIncludeFilter": "",
+    "classNameExcludeFilter": "",
+    "classNameIncludeFilter": "",
+    "methodNameExcludeFilter": "",
+    "methodNameIncludeFilter": "",
+    "hideMappings": false,
+    "hideDataStructures": false,
+    "hidePrivateMethods": true,
+    "hideInterfaceCalls": true, // indirection: implementation -> interface (is hidden) -> implementation
+    "onlyShowApplicationEntryPoints": false, // root node is included
+    "useMethodCallsForStructureDiagram": "ForwardOnly" // ForwardOnly, BothDirections, No
+  },
+  "details": {
+    "aggregation": "GroupByClass", // ByClass, GroupByClass, None
+    "showClassGenericTypes": true,
+    "showMethods": true,
+    "showMethodParameterNames": true,
+    "showMethodParameterTypes": true,
+    "showMethodReturnType": true,
+    "showPackageLevels": 2,
+    "showDetailedClassStructure": true
+  },
+  "rootClass": "com.company.Main",
+  "extensionCallbackMethod": "" // qualified.class.name#methodName - signature: public static String method(String)
+}
+diagram meta data end '/
+
+
+
+digraph g {
+    rankdir="TB"
+    splines=polyline
+    
+
+'nodes 
+subgraph cluster_950484093 { 
+   	label=company
+	labeljust=l
+	fillcolor="#ececec"
+	style=filled
+   
+   BusNetwork2071347952[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)BusNetwork</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   busStops: List&lt;BusStop&gt; </TD></TR>
+<TR><TD ALIGN="LEFT" >-   routes: List&lt;Route&gt; </TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >- getFinalChain(startingPoint: BusStop, destination: BusStop, predecessorTable: HashMap&lt;BusStop, Route&gt;): List&lt;Route&gt;</TD></TR>
+<TR><TD ALIGN="LEFT" >+ findBusStop(name: String): BusStop</TD></TR>
+<TR><TD ALIGN="LEFT" >+ getPathBetween(start: BusStop, finish: BusStop, departureTime: Date, method: Method): List&lt;Route&gt;</TD></TR>
+<TR><TD ALIGN="LEFT" >+ findAllRoutesFrom(startingPoint: BusStop): List&lt;Route&gt;</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+BusStop2071347952[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)BusStop</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   name: String</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >+ load(): List&lt;BusStop&gt;</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+Main2071347952[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)Main</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >+ main(args: String[])</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+Route2071347952[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(C)Route</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >-   startingPoint: BusStop </TD></TR>
+<TR><TD ALIGN="LEFT" >-   destination: BusStop </TD></TR>
+<TR><TD ALIGN="LEFT" >-   busLine: String</TD></TR>
+<TR><TD ALIGN="LEFT" >-   arrivalTimes: List&lt;Date&gt; </TD></TR>
+<TR><TD ALIGN="LEFT" >-   departureTimes: List&lt;Date&gt; </TD></TR>
+<TR><TD ALIGN="LEFT" >-   chosenSchedule: int </TD></TR>
+
+<HR/>
+<!-- <TR><TD ALIGN="LEFT" >- addArrivalTime(t: Date)</TD></TR> -->
+<!--<TR><TD ALIGN="LEFT" >- addDepartureTime(t: Date)</TD></TR> -->
+<TR><TD ALIGN="LEFT" >+ getWeight(predecessorWeight: double): Double</TD></TR>
+<TR><TD ALIGN="LEFT" >+ getWeight(predecessorWeight: double, arrivalTime: Date): Double</TD></TR>
+<TR><TD ALIGN="LEFT" >+ getWeight(predecessorWeight: double, arrivalTime: Date, predecessorTable: HashMap&lt;BusStop, Route&gt;): Double</TD></TR>
+
+<HR/>
+<TR><TD ALIGN="LEFT" >(static) computeBusSchedules(r: Route, departureCalender: Calendar)</TD></TR>
+<TR><TD ALIGN="LEFT" >(static) load(busStops: List&lt;BusStop&gt;, c: Calendar): List&lt;Route&gt;</TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#FFFFFF"
+];
+
+   Method2071347952[
+	label=<<TABLE BORDER="1" CELLBORDER="0" CELLPADDING="4" CELLSPACING="0">
+<TR><TD ALIGN="LEFT" >(E)Method</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" >+   FARMOST</TD></TR>
+<TR><TD ALIGN="LEFT" >+   FASTEST</TD></TR>
+<TR><TD ALIGN="LEFT" >+   SHORTEST</TD></TR>
+<HR/>
+<TR><TD ALIGN="LEFT" ></TD></TR>
+</TABLE>>
+	style=filled
+	margin=0
+	shape=plaintext
+	fillcolor="#DCFBD5"
+];
+} 
+
+'edges    
+
+    
+}
+@enduml
