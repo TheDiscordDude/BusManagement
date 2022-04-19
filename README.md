@@ -1,14 +1,11 @@
 # Bus Management
 
-NOT FINISHED
-
 --- 
 
 ### Table of Contents 
 
 - [Description](#description)
 - [How to use](#how-to-use)
-- [License](#license)
 
 ## Description
 
