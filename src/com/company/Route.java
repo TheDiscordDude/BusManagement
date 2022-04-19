@@ -1,5 +1,6 @@
 package com.company;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -90,15 +91,18 @@ public class Route {
         }
     }
 
+    /** Get the weight of this route. This specific definition is used for the SHORTEST method.
+     * @param predecessorWeight the weight of the predecessor node
+     * @return a double representing the weight of the route
+     */
     public Double getWeight(double predecessorWeight){
         return predecessorWeight+1;
     }
 
-
-    /** calculates the weight of an edge
+    /** Get the weight of this route. This specific definition is used for the FASTEST method.
      * @param predecessorWeight the weight of the predecessor node
-     * @param arrivalTime the time of arrival
-     * @return the weight as a Double
+     * @param arrivalTime the time the passenger will arrive to the starting point of this route
+     * @return a double representing the weight of the route
      */
     public Double getWeight(double predecessorWeight, Date arrivalTime){
 
@@ -118,6 +122,12 @@ public class Route {
         return predecessorWeight+ waitingTime + travelDuration;
     }
 
+    /** Get the weight of this route. This specific definition is used for the FARMOST method.
+     * @param predecessorWeight the weight of the predecessor
+     * @param arrivalTime the time the passenger will arrive to the starting point of this route
+     * @param predecessorTable predecessor table calculated with the dijkstra algorithm
+     * @return a double representing the weight of the route
+     */
     public Double getWeight(double predecessorWeight, Date arrivalTime, HashMap<BusStop, Route> predecessorTable){
         Double weight = this.getWeight(predecessorWeight, arrivalTime);
         List<Route> chain = new ArrayList<>();
@@ -172,14 +182,32 @@ public class Route {
         return result;
     }
 
-    public static void computeBusSchedules(Route r, Calendar departureCalender){
-        Date departureTime = departureCalender.getTime();
+    /** Calculates the whole schedule for a specific route
+     * @param r the treated route
+     * @param departureCalendar it corresponds to the departure time, just in Calendar format
+     */
+    public static void computeBusSchedules(Route r, Calendar departureCalendar){
+        Date departureTime = departureCalendar.getTime();
 
         String filePath = "";
-        if (r.getBusLine().equals("sibra1"))
-            filePath="1_Poisy-ParcDesGlaisins.txt";
-        else if (r.getBusLine().equals("sibra2"))
-            filePath="2_Piscine-Patinoire_Campus.txt";
+
+        String lineNumber = r.getBusLine().substring(r.getBusLine().length() -1);
+        try {
+            File dir = new File(".").getCanonicalFile();
+            File[] files = dir.listFiles();
+            for(File f : files){
+                if(f.getName().startsWith(lineNumber) && f.getName().endsWith(".txt"))
+                    filePath = f.getPath();
+            }
+        } catch (IOException e){
+            System.out.println("IOException. Can't list files in directory");
+            e.printStackTrace();
+            System.exit(8);
+        } catch (NullPointerException e){
+            System.out.println("NullPointerException. No files have been found in this directory");
+            e.printStackTrace();
+            System.exit(10);
+        }
 
         BusStop starting = r.getStartingPoint();
         BusStop destination = r.getDestination();
@@ -188,9 +216,9 @@ public class Route {
         try{
             content = Files.readString(Paths.get(filePath));
         } catch (IOException e){
+            System.out.println("IOException. File " + filePath + " not found while computing schedule for " + r);
             e.printStackTrace();
-
-            System.exit(2);
+            System.exit(1);
         }
 
         Pattern pattern1 = Pattern.compile(starting+" (-|[0-9]).*\\r\\n" +destination+" (-|[0-9]).*", Pattern.MULTILINE);
@@ -204,7 +232,10 @@ public class Route {
 
         if(matcher1.find()){
 
-            if(departureCalender.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || departureCalender.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY )
+            if(departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
+                    departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY ||
+                    departureCalendar.get(Calendar.MONTH) == Calendar.JULY ||
+                    departureCalendar.get(Calendar.MONTH) == Calendar.AUGUST)
             {
                 matcher1.find();
                 match = matcher1.group(0);
@@ -217,7 +248,10 @@ public class Route {
             line2 = match.split("\n")[1];
         } else if(matcher2.find()){
 
-            if(departureCalender.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY || departureCalender.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY )
+            if(departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
+                    departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY ||
+                    departureCalendar.get(Calendar.MONTH) == Calendar.JULY ||
+                    departureCalendar.get(Calendar.MONTH) == Calendar.AUGUST )
             {
                 matcher2.find();
                 match = matcher2.group(0);
@@ -250,16 +284,16 @@ public class Route {
                     Calendar c2 = Calendar.getInstance();
                     Date d1 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(instantStr + " " + timetable1[i]);
                     c2.setTime(d1);
-                    c2.set(Calendar.MONTH, departureCalender.get(Calendar.MONTH));
-                    c2.set(Calendar.DATE, departureCalender.get(Calendar.DATE));
-                    c2.set(Calendar.YEAR, departureCalender.get(Calendar.YEAR));
+                    c2.set(Calendar.MONTH, departureCalendar.get(Calendar.MONTH));
+                    c2.set(Calendar.DATE, departureCalendar.get(Calendar.DATE));
+                    c2.set(Calendar.YEAR, departureCalendar.get(Calendar.YEAR));
                     d1 = c2.getTime();
 
                     Date d2 = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(instantStr + " " + timetable2[i]);
                     c2.setTime(d2);
-                    c2.set(Calendar.MONTH, departureCalender.get(Calendar.MONTH));
-                    c2.set(Calendar.DATE, departureCalender.get(Calendar.DATE));
-                    c2.set(Calendar.YEAR, departureCalender.get(Calendar.YEAR));
+                    c2.set(Calendar.MONTH, departureCalendar.get(Calendar.MONTH));
+                    c2.set(Calendar.DATE, departureCalendar.get(Calendar.DATE));
+                    c2.set(Calendar.YEAR, departureCalendar.get(Calendar.YEAR));
                     d2 = c2.getTime();
 
                     if(d1.after(departureTime) || d1.toString().equals(departureTime.toString())){
@@ -268,21 +302,22 @@ public class Route {
                     }
                     else{
                         Calendar newCalendar = Calendar.getInstance();
-                        newCalendar.set(Calendar.YEAR, departureCalender.get(Calendar.YEAR));
-                        newCalendar.set(Calendar.MONTH, departureCalender.get(Calendar.MONTH));
-                        newCalendar.set(Calendar.DAY_OF_YEAR, departureCalender.get(Calendar.DAY_OF_YEAR) +1 );
+                        newCalendar.set(Calendar.YEAR, departureCalendar.get(Calendar.YEAR));
+                        newCalendar.set(Calendar.MONTH, departureCalendar.get(Calendar.MONTH));
+                        newCalendar.set(Calendar.DAY_OF_YEAR, departureCalendar.get(Calendar.DAY_OF_YEAR) +1 );
                         newCalendar.set(Calendar.HOUR_OF_DAY, 0);
                         newCalendar.set(Calendar.MINUTE, 0);
                         computeBusSchedules(r, newCalendar);
                     }
                 } catch (ParseException e) {
+                    System.out.println("ParseException while computing schedule for : " + r);
                     e.printStackTrace();
+                    System.exit(2);
                 }
             }
         }
 
     }
-
 
     /** Loads every bus routes from the files.
      * @param busStops All the busStops loaded
@@ -291,8 +326,20 @@ public class Route {
     public static List<Route> load(List<BusStop> busStops, Calendar c){
         List<String> filePaths = new ArrayList<>();
 
-        filePaths.add("1_Poisy-ParcDesGlaisins.txt");
-        filePaths.add("2_Piscine-Patinoire_Campus.txt");
+        // At first, we list the files with the bus schedules
+        try {
+            File dir = new File(".").getCanonicalFile();
+            File[] files = dir.listFiles();
+            for(File f : files){
+                if(f.getName().endsWith(".txt")){
+                    filePaths.add(f.getName());
+                }
+            }
+        } catch (IOException e){
+            System.out.println("IOException. Can't list files in directory");
+            e.printStackTrace();
+            System.exit(9);
+        }
 
         List<Route> routes = new ArrayList<>();
 
@@ -343,11 +390,11 @@ public class Route {
                     if(r.getBusLine() == null){
                         r.setBusLine("sibra" + (filePath.split("_"))[0]);
                     }
-
                 }
-
-            } catch (Exception e) {
+            } catch (IOException e) {
+                System.out.println("IOException while reading schedule files");
                 e.printStackTrace();
+                System.exit(3);
             }
         }
         List<Route> reverseRoutes = new ArrayList<>();

@@ -8,7 +8,6 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-
         List<BusStop> busStops = BusStop.load();
 
         BusNetwork network = new BusNetwork(busStops);
@@ -27,7 +26,9 @@ public class Main {
                 Date date = new SimpleDateFormat("dd-MM-yyyy").parse(args[3]);
                 c1.setTime(date);
             } catch (ParseException e) {
+                System.out.println("ParseException. Please enter a valid date. For example : 30-12-2022");
                 e.printStackTrace();
+                System.exit(5);
             }
         }
 
@@ -41,7 +42,9 @@ public class Main {
                 c1.set(Calendar.SECOND, 0);
 
             } catch (NumberFormatException e) {
+                System.out.println("NumberFormatException. Please enter a valid time in 24h format. For example : 07:30");
                 e.printStackTrace();
+                System.exit(4);
             }
         }
         departureTime = c1.getTime();
