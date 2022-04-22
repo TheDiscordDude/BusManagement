@@ -132,9 +132,9 @@ public class Route {
         Double weight = this.getWeight(predecessorWeight, arrivalTime);
         List<Route> chain = new ArrayList<>();
 
-        BusStop currentNode = destination;
+        BusStop currentNode = this.startingPoint;
 
-        while (!currentNode.equals(startingPoint) && !(predecessorTable.get(currentNode)==null)){
+        while (!(predecessorTable.get(currentNode)==null)){
             chain.add(predecessorTable.get(currentNode));
             currentNode = predecessorTable.get(currentNode).getStartingPoint();
         }
@@ -220,9 +220,9 @@ public class Route {
             e.printStackTrace();
             System.exit(1);
         }
-
-        Pattern pattern1 = Pattern.compile(starting+" (-|[0-9]).*\\r\\n" +destination+" (-|[0-9]).*", Pattern.MULTILINE);
-        Pattern pattern2 = Pattern.compile(starting+" (-|[0-9]).*\\r\\n.*\\r\\n" +destination+" (-|[0-9]).*", Pattern.MULTILINE);
+        String lineSeparator = System.getProperty("line.separator");
+        Pattern pattern1 = Pattern.compile(starting+" (-|[0-9]).*" + lineSeparator +destination+" (-|[0-9]).*", Pattern.MULTILINE);
+        Pattern pattern2 = Pattern.compile(starting+" (-|[0-9]).*"+lineSeparator+".*" + lineSeparator +destination+" (-|[0-9]).*", Pattern.MULTILINE);
         Matcher matcher1 = pattern1.matcher(content);
         Matcher matcher2 = pattern2.matcher(content);
 
@@ -231,7 +231,6 @@ public class Route {
         String line2 = null;
 
         if(matcher1.find()){
-
             if(departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
                     departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY ||
                     departureCalendar.get(Calendar.MONTH) == Calendar.JULY ||
