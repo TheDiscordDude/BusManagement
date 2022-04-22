@@ -40,6 +40,8 @@ Full command example :
 
 `java -jar BusManagement.jar POISY_COLLÈGE Pommaries 10:00 30-12-2022`
 
+On thing : There is a problem with linux that I am currently fixing.  
+
 #### Installation
 
 You just need to clone the project to a directory : 
