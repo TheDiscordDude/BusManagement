@@ -307,6 +307,7 @@ public class Route {
                         newCalendar.set(Calendar.HOUR_OF_DAY, 0);
                         newCalendar.set(Calendar.MINUTE, 0);
                         computeBusSchedules(r, newCalendar);
+                        break;
                     }
                 } catch (ParseException e) {
                     System.out.println("ParseException while computing schedule for : " + r);
