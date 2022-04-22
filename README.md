@@ -7,6 +7,7 @@
 - [Description](#description)
 - [How to use](#how-to-use)
 
+---
 ## Description
 
 This is a project done as an exercise for my university. 
@@ -23,6 +24,7 @@ The objective of the program is to find 3 different paths between 2 bus stops.
 To create this project, It used Java 15 SDK.
 So you should be able to run it without problem with version >= 15.
 
+---
 ## How to use
 
 First, to use this tool you'll need to be in the same directory as the schedule files.
