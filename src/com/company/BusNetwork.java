@@ -41,7 +41,7 @@ public class BusNetwork {
 
         HashMap<BusStop, Double> weights = new HashMap<>(size);
         for(BusStop b: this.busStops){
-            weights.put(b, 999999999.9);
+            weights.put(b, Double.POSITIVE_INFINITY);
         }
 
         List<BusStop> usedNodes = new ArrayList<>();
@@ -74,7 +74,7 @@ public class BusNetwork {
                     case SHORTEST -> weight = r.getWeight(weights.get(currentNode));
                     case FASTEST -> weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime);
                     case FARMOST -> weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime, predecessorTable);
-                    default -> weight=999999999.9;
+                    default -> weight=Double.POSITIVE_INFINITY;
                 }
 
                 if(weights.get(r.getDestination()) > weight ){
@@ -89,7 +89,7 @@ public class BusNetwork {
             BusStop electedNode = null;
 
             for(BusStop bs : this.busStops){
-                if(!usedNodes.contains(bs) && weights.get(bs) != 999999999.9){
+                if(!usedNodes.contains(bs) && weights.get(bs) != Double.POSITIVE_INFINITY){
                     if(minValue > weights.get(bs)){
                         minValue = weights.get(bs);
                         electedNode = bs;

@@ -1,4 +1,5 @@
 package com.company;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -16,8 +17,20 @@ public class Main {
         BusStop destination;
         Date departureTime;
 
-        start = network.findBusStop(args[0]);
-        destination = network.findBusStop(args[1]);
+
+        if(args.length < 2){
+            System.out.println("IllegalArgumentException. Wrong arguments");
+            help();
+            System.exit(12);
+        }
+
+        start = new BusStop(args[0]);
+        destination = new BusStop(args[1]);
+        if (!busStops.contains(start) || !busStops.contains(destination)){
+            System.out.println("IllegalArgumentException. The bus stops you entered where not found");
+            help();
+            System.exit(11);
+        }
 
         Calendar c1 = Calendar.getInstance();
 
@@ -37,6 +50,8 @@ public class Main {
                 String[] parts = args[2].split(":");
                 int hours = Integer.parseInt(parts[0]);
                 int minutes = Integer.parseInt(parts[1]);
+                if ( 0 > hours || hours > 23 || 0 > minutes || minutes > 59 )
+                    throw new NumberFormatException("Wrong time format");
                 c1.set(Calendar.HOUR_OF_DAY, hours);
                 c1.set(Calendar.MINUTE, minutes);
                 c1.set(Calendar.SECOND, 0);
@@ -78,5 +93,14 @@ public class Main {
         }
         System.out.println();
 
+    }
+
+    public static void help(){
+        System.out.println("""
+                Arguments :
+                \tStarting_Point Destination Hour(optional) Date(optional)
+                \tExample :\s
+                \tGARE Pommaries 07:00 22-10-2022
+                """);
     }
 }

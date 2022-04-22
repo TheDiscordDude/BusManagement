@@ -44,6 +44,8 @@ public class BusStop {
         try {
             File dir = new File(".").getCanonicalFile();
             File[] files = dir.listFiles();
+            if(files == null)
+                throw new NullPointerException();
             for(File f : files){
                 if(f.getName().endsWith(".txt")){
                     filePaths.add(f.getName());
@@ -53,6 +55,10 @@ public class BusStop {
             System.out.println("IOException. Can't list files in directory");
             e.printStackTrace();
             System.exit(7);
+        } catch (NullPointerException e){
+            System.out.println("NullPointerException. Can't list files in directory");
+            e.printStackTrace();
+            System.exit(13);
         }
 
 
