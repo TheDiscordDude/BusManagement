@@ -113,7 +113,7 @@ BusStop2071347952[
 <HR/>
 <TR><TD ALIGN="LEFT" >-   name: String</TD></TR>
 <HR/>
-<TR><TD ALIGN="LEFT" >+ load(): List&lt;BusStop&gt;</TD></TR>
+<TR><TD ALIGN="LEFT" >(static) load(): List&lt;BusStop&gt;</TD></TR>
 </TABLE>>
 	style=filled
 	margin=0
@@ -176,10 +176,7 @@ Route2071347952[
 	shape=plaintext
 	fillcolor="#DCFBD5"
 ];
-} 
-
-'edges    
-
+}
     
 }
 @enduml

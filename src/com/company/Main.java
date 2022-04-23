@@ -9,20 +9,20 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        List<BusStop> busStops = BusStop.load();
-
-        BusNetwork network = new BusNetwork(busStops);
-
-        BusStop start;
-        BusStop destination;
-        Date departureTime;
-
-
+        // Verifying if enough arguments are passed
         if(args.length < 2){
             System.out.println("IllegalArgumentException. Wrong arguments");
             help();
             System.exit(12);
         }
+
+        // Loading the bus stops
+        List<BusStop> busStops = BusStop.load();
+        BusNetwork network = new BusNetwork(busStops);
+
+        BusStop start;
+        BusStop destination;
+        Date departureTime;
 
         start = new BusStop(args[0]);
         destination = new BusStop(args[1]);

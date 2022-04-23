@@ -36,28 +36,31 @@ public class BusNetwork {
     public List<Route> getPathBetween(BusStop start, BusStop finish, Date departureTime, Method method) {
 
         // We initialise the process
-
         int size = this.busStops.size();
 
+        // Set the weight table to infinite values
         HashMap<BusStop, Double> weights = new HashMap<>(size);
         for(BusStop b: this.busStops){
             weights.put(b, Double.POSITIVE_INFINITY);
         }
 
+        // we keep track of the used nodes
         List<BusStop> usedNodes = new ArrayList<>();
 
+        // we also need to keep track of the predecessor of a node
         HashMap<BusStop, Route> predecessorTable = new HashMap<>(size);
         for(BusStop b: this.busStops){
             predecessorTable.put(b, null);
         }
 
+        // the first node to be treated is the starting point
         BusStop currentNode = start;
 
-        // the first routes that need to be treated are those coming
         List<Route> toBeTreated;
 
         // to finish the initialization, we set the weight of the first node to 0
         weights.put(currentNode, 0.0);
+
         Date predecessorArrivalTime = departureTime;
         do {
             toBeTreated = new ArrayList<>(findAllRoutesFrom(currentNode));
