@@ -332,7 +332,7 @@ public class Route {
     public static List<Route> load(List<BusStop> busStops, Calendar calendar){
         List<String> filePaths = new ArrayList<>();
 
-        // At first, we list the files with the bus schedules
+        // In this part, we get all the files that contain infos on bus lines
         try {
             File dir = new File(".").getCanonicalFile();
             File[] files = dir.listFiles();
@@ -349,6 +349,7 @@ public class Route {
 
         List<Route> routes = new ArrayList<>();
 
+        // This whole segment read the routes from all the files in 1 direction.
         for (String filePath : filePaths) {
             try {
                 List<String> lines = Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
@@ -368,7 +369,7 @@ public class Route {
                         }
                         Route currentRoute = new Route();
                         currentRoute.setStartingPoint(busStop);
-
+                        currentRoute.setBusLine("sibra" + (filePath.split("_"))[0]);
                         inDepthRoutes.add(currentRoute);
                     }
 
@@ -387,17 +388,12 @@ public class Route {
                             else{
                                 Route newRoute = new Route(r);
                                 newRoute.setDestination(busStop);
+
                                 inDepthRoutes.add(newRoute);
                             }
                         }
                     }
                     routes.addAll(inDepthRoutes);
-                }
-                for(Route r : routes){
-
-                    if(r.getBusLine() == null){
-                        r.setBusLine("sibra" + (filePath.split("_"))[0]);
-                    }
                 }
             } catch (IOException e) {
                 System.out.println("IOException while reading schedule files");
@@ -405,12 +401,16 @@ public class Route {
                 System.exit(3);
             }
         }
+
+        // We got all the routes in 1 direction, we now need the same thing in the other direction
         List<Route> reverseRoutes = new ArrayList<>();
         for(Route r: routes) {
             Route reverseRoute = r.getReverse();
             reverseRoutes.add(reverseRoute);
         }
         routes.addAll(reverseRoutes);
+
+        // Once we have all the necessary Routes setup, we calculate the schedules on each and every routes
         for(Route r: routes){
             computeBusSchedules(r, calendar);
         }
