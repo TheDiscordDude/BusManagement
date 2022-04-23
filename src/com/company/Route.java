@@ -183,15 +183,16 @@ public class Route {
     }
 
     /** Calculates the whole schedule for a specific route
-     * @param r the treated route
+     * @param route the treated route
      * @param departureCalendar it corresponds to the departure time, just in Calendar format
      */
-    public static void computeBusSchedules(Route r, Calendar departureCalendar){
+    public static void computeBusSchedules(Route route, Calendar departureCalendar){
         Date departureTime = departureCalendar.getTime();
+        boolean treatNextDay = false;
 
         String filePath = "";
 
-        String lineNumber = r.getBusLine().substring(r.getBusLine().length() -1);
+        String lineNumber = route.getBusLine().substring(route.getBusLine().length() -1);
         try {
             File dir = new File(".").getCanonicalFile();
             File[] files = dir.listFiles();
@@ -209,14 +210,14 @@ public class Route {
             System.exit(10);
         }
 
-        BusStop starting = r.getStartingPoint();
-        BusStop destination = r.getDestination();
+        BusStop starting = route.getStartingPoint();
+        BusStop destination = route.getDestination();
         // we read the file
         String content = null;
         try{
             content = Files.readString(Paths.get(filePath));
         } catch (IOException e){
-            System.out.println("IOException. File " + filePath + " not found while computing schedule for " + r);
+            System.out.println("IOException. File " + filePath + " not found while computing schedule for " + route);
             e.printStackTrace();
             System.exit(1);
         }
@@ -296,34 +297,39 @@ public class Route {
                     d2 = c2.getTime();
 
                     if(d1.after(departureTime) || d1.toString().equals(departureTime.toString())){
-                        r.addDepartureTime(d1);
-                        r.addArrivalTime(d2);
+                        route.addDepartureTime(d1);
+                        route.addArrivalTime(d2);
                     }
                     else{
-                        Calendar newCalendar = Calendar.getInstance();
-                        newCalendar.set(Calendar.YEAR, departureCalendar.get(Calendar.YEAR));
-                        newCalendar.set(Calendar.MONTH, departureCalendar.get(Calendar.MONTH));
-                        newCalendar.set(Calendar.DAY_OF_YEAR, departureCalendar.get(Calendar.DAY_OF_YEAR) +1 );
-                        newCalendar.set(Calendar.HOUR_OF_DAY, 0);
-                        newCalendar.set(Calendar.MINUTE, 0);
-                        computeBusSchedules(r, newCalendar);
-                        break;
+                        treatNextDay = true;
                     }
                 } catch (ParseException e) {
-                    System.out.println("ParseException while computing schedule for : " + r);
+                    System.out.println("ParseException while computing schedule for : " + route);
                     e.printStackTrace();
                     System.exit(2);
                 }
             }
         }
 
+        // We always prefer to also compute day + 1 so there is always a way to access our destination
+        if(treatNextDay){
+            Calendar newCalendar = Calendar.getInstance();
+            newCalendar.set(Calendar.YEAR, departureCalendar.get(Calendar.YEAR));
+            newCalendar.set(Calendar.MONTH, departureCalendar.get(Calendar.MONTH));
+            newCalendar.set(Calendar.DAY_OF_YEAR, departureCalendar.get(Calendar.DAY_OF_YEAR) +1 );
+            newCalendar.set(Calendar.HOUR_OF_DAY, 0);
+            newCalendar.set(Calendar.MINUTE, 0);
+            computeBusSchedules(route, newCalendar);
+        }
+
     }
 
     /** Loads every bus routes from the files.
      * @param busStops All the busStops loaded
+     * @param calendar the departure time in calendar format
      * @return the list of routes
      */
-    public static List<Route> load(List<BusStop> busStops, Calendar c){
+    public static List<Route> load(List<BusStop> busStops, Calendar calendar){
         List<String> filePaths = new ArrayList<>();
 
         // At first, we list the files with the bus schedules
@@ -355,8 +361,9 @@ public class Route {
                     for(String departure : departures){
                         BusStop busStop = null;
                         for(BusStop b : busStops){
-                            if (Objects.equals(b.getName(), departure)){
+                            if (b.getName().equals(departure)){
                                 busStop = b;
+                                break;
                             }
                         }
                         Route currentRoute = new Route();
@@ -370,6 +377,7 @@ public class Route {
                         for(BusStop b : busStops){
                             if (Objects.equals(b.getName(), arrival)){
                                 busStop = b;
+                                break;
                             }
                         }
                         for(Route r : inDepthRoutes){
@@ -404,7 +412,7 @@ public class Route {
         }
         routes.addAll(reverseRoutes);
         for(Route r: routes){
-            computeBusSchedules(r, c);
+            computeBusSchedules(r, calendar);
         }
         return routes;
     }
