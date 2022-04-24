@@ -76,9 +76,7 @@ public class Main {
         System.out.println("Shortest Path to " + destination);
         for(Route r : shortestPath){
             System.out.println("\t"+r);
-        }
-        System.out.println();
-
+        }        System.out.println();
 
         System.out.println("Fastest Path to " + destination);
         for(Route r : fastestPath){

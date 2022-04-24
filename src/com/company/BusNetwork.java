@@ -27,14 +27,14 @@ public class BusNetwork {
     }
 
     /**
-     * Returns the list of Bus route you need to take to get to your destination
+     * Returns the list of Bus route you need to take to get to your destination.
+     * This method utilises the Dijkstra algorithm.
      * @param start     Our point of origin
      * @param finish    The destination we wish to reach
      * @param method    the method we wish to use : FASTEST path, SHORTEST path of FARMOST
      * @return The list of Bus route you need to take to get to your destination
      */
     public List<Route> getPathBetween(BusStop start, BusStop finish, Date departureTime, Method method) {
-
         // We initialise the process
         int size = this.busStops.size();
 
@@ -43,6 +43,8 @@ public class BusNetwork {
         for(BusStop b: this.busStops){
             weights.put(b, Double.POSITIVE_INFINITY);
         }
+        // we set the weight of the first node to 0
+        weights.put(start, 0.0);
 
         // we keep track of the used nodes
         List<BusStop> usedNodes = new ArrayList<>();
@@ -58,21 +60,20 @@ public class BusNetwork {
 
         List<Route> toBeTreated;
 
-        // to finish the initialization, we set the weight of the first node to 0
-        weights.put(currentNode, 0.0);
-
         Date predecessorArrivalTime = departureTime;
         do {
             toBeTreated = new ArrayList<>(findAllRoutesFrom(currentNode));
 
             for (Route r : toBeTreated){
+                // In this segment, we need to find when we will be arriving to the current node,
+                // so we can calculate the time needed to get to the next stop
                 Route predecessorRoute;
                 predecessorRoute = predecessorTable.get(currentNode);
                 if(predecessorRoute != null)
                     predecessorArrivalTime = predecessorRoute.getArrivalTime();
 
                 double weight;
-
+                // This is where things are different for each and every Method. The weight is calculated differently
                 switch (method){
                     case SHORTEST -> weight = r.getWeight(weights.get(currentNode));
                     case FASTEST -> weight = r.getWeight(weights.get(currentNode), predecessorArrivalTime);
@@ -80,17 +81,20 @@ public class BusNetwork {
                     default -> weight=Double.POSITIVE_INFINITY;
                 }
 
+                // If we find a weight that is lower than the current weight of the node, ...
                 if(weights.get(r.getDestination()) > weight ){
+                    // ... we update the weight and ...
                     weights.put(r.getDestination(), weight);
+                    // ... we update the predecessor table
                     predecessorTable.put(r.getDestination(), r);
                     r.setChosenSchedule(predecessorArrivalTime);
                 }
             }
             usedNodes.add(currentNode);
 
+            // In this section, we choose the node that will be used next.
             double minValue = 9999;
             BusStop electedNode = null;
-
             for(BusStop bs : this.busStops){
                 if(!usedNodes.contains(bs) && weights.get(bs) != Double.POSITIVE_INFINITY){
                     if(minValue > weights.get(bs)){
@@ -99,10 +103,9 @@ public class BusNetwork {
                     }
                 }
             }
-
-
             currentNode = electedNode;
-        }while (usedNodes.size() < this.busStops.size() && currentNode != null);
+
+        }while ( usedNodes.size() < this.busStops.size());
         return getFinalChain(start, finish, predecessorTable);
     }
 

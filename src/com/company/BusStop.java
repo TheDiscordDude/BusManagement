@@ -37,7 +37,6 @@ public class BusStop {
      * @return a complete list of bus stops
      */
     public static List<BusStop> load() {
-
         // At first, we list the files with the bus schedules
         List<String> filePaths = new ArrayList<>();
 
@@ -63,17 +62,18 @@ public class BusStop {
 
 
         List<BusStop> busStops = new ArrayList<>();
-
+        // Then, for all the files ...
         for (String filePath : filePaths) {
             try {
 
                 List<String> lines = Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
                 String firstLine = lines.get(0);
+                // ... we treat the first line we because that the one that contains all the infos.
                 String[] busStopsNames = firstLine.split(" N ");
                 for (String name : busStopsNames) {
-                    String[] temp = name.split(" \\+ ");
-                    if (temp.length > 1) {
-                        for (String s : temp) {
+                    String[] stops = name.split(" \\+ ");
+                    if (stops.length > 1) {
+                        for (String s : stops) {
                             BusStop newBusStop = new BusStop(s);
                             if(!busStops.contains(newBusStop)){
                                 busStops.add(newBusStop);

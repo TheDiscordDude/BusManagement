@@ -100,6 +100,7 @@ public class Route {
     }
 
     /** Get the weight of this route. This specific definition is used for the FASTEST method.
+     * The weight here corresponds to the time-cost.
      * @param predecessorWeight the weight of the predecessor node
      * @param arrivalTime the time the passenger will arrive to the starting point of this route
      * @return a double representing the weight of the route
@@ -110,6 +111,7 @@ public class Route {
         double travelDuration = 0.0;
         double waitingTime = 0.0;
         for(int i = 0; i < this.departureTimes.size(); i++){
+            // we get the first scheduled bus right after the arrivalTime
             if(this.departureTimes.get(i).after(arrivalTime) || this.departureTimes.get(i).toString().equals(arrivalTime.toString()) ) {
                 nextDepartureTime = this.departureTimes.get(i);
                 Date nextArrivalTime = this.arrivalTimes.get(i);
@@ -119,7 +121,7 @@ public class Route {
                 break;
             }
         }
-        return predecessorWeight+ waitingTime + travelDuration;
+        return predecessorWeight + waitingTime + travelDuration;
     }
 
     /** Get the weight of this route. This specific definition is used for the FARMOST method.
@@ -129,21 +131,23 @@ public class Route {
      * @return a double representing the weight of the route
      */
     public Double getWeight(double predecessorWeight, Date arrivalTime, HashMap<BusStop, Route> predecessorTable){
+        // At first, we get the cost in time
         Double weight = this.getWeight(predecessorWeight, arrivalTime);
+
+        // Then we calculate the depth of the node compared to the starting point
         List<Route> chain = new ArrayList<>();
-
         BusStop currentNode = this.startingPoint;
-
+        // We know one thing : the starting point has no predecessor.
         while (!(predecessorTable.get(currentNode)==null)){
             chain.add(predecessorTable.get(currentNode));
             currentNode = predecessorTable.get(currentNode).getStartingPoint();
         }
+        // Here we add the depth of the node to cost in time
         weight += chain.size();
         return weight;
     }
 
     public Date getArrivalTime(){
-
         return this.arrivalTimes.get(this.chosenSchedule);
     }
 
@@ -187,8 +191,11 @@ public class Route {
      * @param departureCalendar it corresponds to the departure time, just in Calendar format
      */
     public static void computeBusSchedules(Route route, Calendar departureCalendar){
+        //
         Date departureTime = departureCalendar.getTime();
         boolean treatNextDay = false;
+        BusStop starting = route.getStartingPoint();
+        BusStop destination = route.getDestination();
 
         String filePath = "";
 
@@ -210,8 +217,6 @@ public class Route {
             System.exit(10);
         }
 
-        BusStop starting = route.getStartingPoint();
-        BusStop destination = route.getDestination();
         // we read the file
         String content = null;
         try{
@@ -222,47 +227,38 @@ public class Route {
             System.exit(1);
         }
         String lineSeparator = System.getProperty("line.separator");
+        // here there are 2 possibilities, either the 2 bus stops are on top of each other ...
         Pattern pattern1 = Pattern.compile(starting+" (-|[0-9]).*" + lineSeparator +destination+" (-|[0-9]).*", Pattern.MULTILINE);
+        // or there is a gap between them
         Pattern pattern2 = Pattern.compile(starting+" (-|[0-9]).*"+lineSeparator+".*" + lineSeparator +destination+" (-|[0-9]).*", Pattern.MULTILINE);
         Matcher matcher1 = pattern1.matcher(content);
         Matcher matcher2 = pattern2.matcher(content);
 
         String match;
-        String line1 = null;
-        String line2 = null;
-
-        if(matcher1.find()){
-            if(departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
-                    departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY ||
-                    departureCalendar.get(Calendar.MONTH) == Calendar.JULY ||
-                    departureCalendar.get(Calendar.MONTH) == Calendar.AUGUST)
-            {
-                matcher1.find();
-                match = matcher1.group(0);
-            }
-            else {
-                match = matcher1.group(0);
-            }
-
-            line1 = match.split("\n")[0];
-            line2 = match.split("\n")[1];
-        } else if(matcher2.find()){
-
-            if(departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
-                    departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY ||
-                    departureCalendar.get(Calendar.MONTH) == Calendar.JULY ||
-                    departureCalendar.get(Calendar.MONTH) == Calendar.AUGUST )
-            {
-                matcher2.find();
-                match = matcher2.group(0);
-            }
-            else {
-                match = matcher2.group(0);
-            }
-
-            line1 = match.split("\n")[0];
-            line2 = match.split("\n")[2];
+        String line1;
+        String line2;
+        List<String> matches = new ArrayList<>();
+        while (matcher1.find()){
+            matches.add(matcher1.group());
         }
+        while (matcher2.find()){
+            matches.add(matcher2.group());
+        }
+        if(departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY ||
+                departureCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY ||
+                departureCalendar.get(Calendar.MONTH) == Calendar.JULY ||
+                departureCalendar.get(Calendar.MONTH) == Calendar.AUGUST)
+        {
+            // the date is in weekend or vacation,
+            match = matches.get(1);
+        }
+        else {
+            match = matches.get(0);
+        }
+        // the first line corresponds to the starting point of the route
+        line1 = match.split("\n")[0];
+        // the last line corresponds to the destination
+        line2 = match.substring(match.lastIndexOf("\n"));
 
         String[] timetable1 = line1.split(" ");
         String[] timetable2 = line2.split(" ");
