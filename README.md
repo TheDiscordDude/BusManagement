@@ -18,6 +18,7 @@ The objective of the program is to find 3 different paths between 2 bus stops.
 - The second result is the **FASTEST** path, i.e. the path will take the less amount of time
 - The last result is what we call the **FARMOST** path. It is not the fastest not the shortest, but something in between.
 
+If you want to see the documentation, you can see it right [there](https://thediscorddude.github.io/BusManagement/com/company/package-summary.html)
 
 #### Technologies
 
